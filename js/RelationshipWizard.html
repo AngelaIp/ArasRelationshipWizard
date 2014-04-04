@@ -1,0 +1,116 @@
+<script type="text/javascript">
+	top.aras.uiAddConfigLink2Doc4Assembly(document, "TreeTable");
+</script>
+<script type="text/javascript">
+	//Global variables
+	// UI
+	var gridApplet = null;
+	
+	var currSelCell = null; //variables to know what cell is being edited
+	var currSelRowId = ''; //setted in onGridCellEdit
+	var currSelCol = ''; //setted in onGridCellEdit
+	
+</script>
+
+
+
+<script type="text/javascript" for="MyGrid" event="GridStart(isSuccess)">
+	setGridControlDefaults();
+</script>
+<script type="text/javascript" for="MyGrid" event="GridClick(rowId, col)">
+	//alert("rowId: " + rowId + ", col:" + col);
+	myGridControl.setSelectedRow(rowId, false, false);
+</script>
+<!--<script type="text/javascript" for="MyGrid" event="GridClick(rowId, col)">
+	assigneeGridControl.setSelectedRow(rowId, false, false);
+	OpenSearchDialog_Assignee(rowId, col);
+	return true;
+</script>-->
+<script type="text/javascript" for="MyGrid" event="GridDoubleClick(rowId)">
+</script>
+<script type="text/javascript" for="MyGrid" event="GridEditCell(mode, rowID, col)">
+	mode = 2;
+	//var res = OnAffectedEditCell(mode, rowID, col);
+	//return res;
+	
+	var cell = cells(rowID, parseInt(col));
+	currSelCell = cell;
+	currSelRowId = rowID;
+	currSelCol = col;
+	cell.SetInputHelperIcon("../images/Icons/16x16/16x16_ellipsis.gif");
+	cell.InputHelperEnabled = true;
+	
+</script>
+<script>
+	function setGridControlDefaults()
+	{
+		myGridControl = document.MyGrid;
+		myGridControl.Delimeter = "|";
+		myGridControl.DrawGrid = true;
+		myGridControl.HeaderBGColor = "#d4d0c8";
+		myGridControl.noSort = false;
+		myGridControl.setColumnCount(2);
+		myGridControl.setInitWidths("320|80");
+		myGridControl.setHorAligns("LEFT|CENTER");
+		myGridControl.SetHeaderCol(0, "Task Templates");
+		myGridControl.SetHeaderCol(1, "Select");
+		myGridControl.Editable = true;
+		myGridControl.Justify = true;
+		//myGridControl.SetColumnProperties('type=NOEDIT', 0);
+		myGridControl.SetColumnProperties('type=EDIT', 0);
+		myGridControl.SetColumnProperties('type=EDIT', 1);
+		
+		//myGridControl.addRow(itemId, "Test" + "|" + "<checkbox state=0>" , itemId);					
+		myGridControl.addRow("ThisRow1","Test" + "|" + "<checkbox state=0>","ThisRow1");					
+	}
+
+	//function OpenSearchDialog_Assignee(IT_Name)
+	//{
+	//	var param = {
+	//		aras: top.aras,
+	//		itemtypeName: IT_Name,
+	//		itemContext: item,
+	//		itemSelectedID: currSelRowId,
+	//		sourceItemTypeName: curITName,
+	//		sourcePropertyName: curPropName,
+	//		multiselect: false
+	//	};
+	//	var searchedItem;
+	//	var dlgRes = showModalDialog('searchDialog.html', param, 'dialogHeight:450px; dialogWidth:700px; status:0; help:0; resizable:1');
+	//	if (dlgRes == undefined) return false;
+	//	searchedItem = dlgRes.item;
+	//	try
+	//	{
+	//		if (dlgRes.itemID)
+	//		{
+	//			var keyedName = dlgRes.keyed_name;
+	//			var res = dlgRes.itemID;
+	//		}
+	//	catch (ex)
+	//	{}
+	//	if (!searchedItem)
+	//	{
+	//		top.aras.AlertError(top.aras.getResource("PLM", "impactmatrix.message.item_should_be_selected"));
+	//		return;
+	//	}
+	//	if (!searchedItem)
+	//	{
+	//		return;
+	//	}
+	//	var assigneeId = top.aras.getItemProperty(searchedItem, "id", "");
+	//	var assigneeName = top.aras.getItemProperty(searchedItem, "keyed_name", "");
+	//	//MyGrid.cells(rowId, col).setText(assigneeId);
+	//	MyGrid.cells(rowId, 1).setValue(assigneeName);
+	//}
+
+</script>
+<style>
+	#MyGrid {
+		display: block;
+		position: absolute;
+		top: 1px;
+		left: 1px;
+	}
+</style>
+<object id="MyGrid" style="width:400px; height:270px;" classid="../cbin/TreeTable.dll#Aras.Client.Controls.GridContainer">
+</object>
