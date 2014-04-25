@@ -1,231 +1,389 @@
-<script type="text/javascript">
-	top.aras.uiAddConfigLink2Doc4Assembly(document, "TreeTable");
-</script>
-<script type="text/javascript">
-	//Global variables
-	// UI
-	var gridApplet = null;
-	
-	var currSelCell = null; //variables to know what cell is being edited
-	var currSelRowId = ''; //setted in onGridCellEdit
-	var currSelCol = ''; //setted in onGridCellEdit
-	
-</script>
-<script>
-	function setGridControlDefaults()
-	{
-		myGridControl = document.MyGrid;
-		myGridControl.Delimeter = "|";
-		myGridControl.DrawGrid = true;
-		myGridControl.HeaderBGColor = "#d4d0c8";
-		myGridControl.noSort = false;
-		myGridControl.setColumnCount(2);
-		myGridControl.setInitWidths("320|80");
-		myGridControl.setHorAligns("LEFT|CENTER");
-		myGridControl.SetHeaderCol(0, "Task Templates");
-		myGridControl.SetHeaderCol(1, "Select");
-		myGridControl.Editable = true;
-		myGridControl.Justify = true;
-		//myGridControl.SetColumnProperties('type=NOEDIT', 0);
-		myGridControl.SetColumnProperties('type=EDIT', 0);
-		myGridControl.SetColumnProperties('type=EDIT', 1);
+<!DOCTYPE html>
+<html>
+	<head>
+		<script type="text/javascript">
+			top.aras.uiAddConfigLink2Doc4Assembly(document, "TreeTable");
+		</script>
+		<script type="text/javascript">
+			//Global variables
+			// UI
+			
+			var inn;
+			var THIS;
+			
+			var gridApplet = null;
+			
+			var currSelCell = null; //variables to know what cell is being edited
+			var currSelRowId = ''; //setted in onGridCellEdit
+			var currSelCol = ''; //setted in onGridCellEdit
+			
+		</script>
+		<script>
+			function setGridControlDefaults()
+			{
+				myGridControl = document.MyGrid;
+				myGridControl.Delimeter = "|";
+				myGridControl.DrawGrid = true;
+				myGridControl.HeaderBGColor = "#d4d0c8";
+				myGridControl.noSort = false;
+				myGridControl.setColumnCount(2);
+				myGridControl.setInitWidths("320|80");
+				myGridControl.setHorAligns("LEFT|CENTER");
+				myGridControl.SetHeaderCol(0, "Task Templates");
+				myGridControl.SetHeaderCol(1, "Select");
+				myGridControl.Editable = true;
+				myGridControl.Justify = true;
+				//myGridControl.SetColumnProperties('type=NOEDIT', 0);
+				myGridControl.SetColumnProperties('type=EDIT', 0);
+				myGridControl.SetColumnProperties('type=EDIT', 1);
+							
+				myGridControl.addRow("ThisRow1","Test" + "|" + "<checkbox state=0>","ThisRow1");					
+			}
+			
+			function loadDefaults()
+			{
+				//debugger;
+				THIS = dialogArguments.item;
+				inn = dialogArguments.innovator;
+				
+				if (dialogArguments.item.getAttribute("type"))
+				{
+					document.all.Itemtype.value = dialogArguments.item.getAttribute("type");
+					document.all.selectItemtype.disabled = true;
+					queryRelationshiptypes(document.all.Itemtype.value);
+				}
+				
+				if (dialogArguments.itemKeyedName)
+				{
+					document.all.Item.value = dialogArguments.itemKeyedName;
+					document.all.selectItem.disabled = true;
+				}
+			}
+			
+			function setItem() 
+			{
+				//debugger;
+				if (!document.all.Itemtype.value)
+				{
+					return;
+				}
+				var Item = openItemBrowser(document.all.Itemtype.value);
+				if(Item)
+				{
+					document.all.Item.value = Item;
+				}
+			}
+			
+			function setItemtype() 
+			{
+				
+				var Item = openItemBrowser("itemtype");
+				//debugger;
+				if(Item)
+				{
+					document.all.Itemtype.value = Item;
+					//Clear item instance
+					document.all.Item.value = "";
+				}
+				
+				queryRelationshiptypes(Item)
+				
+			}
+			
+			function openItemBrowser(findType)
+			{
+				var param = {
+					aras: window.top.aras,
+					itemtypeName: findType,
+					multiselect: false
+				};
+				
+				var res = showModalDialog(top.aras.getScriptsURL() + 'searchDialog.html', param, 'dialogHeight:450px; dialogWidth:950px; status:0; help:0; resizable:1');
+				if (res == undefined) return;
+				
+				searchedItem = res.item;
+				if (!searchedItem)
+				{
+					return;
+				}
+				var keyed_name = top.aras.getKeyedNameEx(searchedItem);
+				return keyed_name;
+			}
+			
+			function openItemBrowserChooser(findType) 
+			{
+				debugger;
+				var param = {
+					aras: window.top.aras,
+					itemtypeName: findType,
+					multiselect: true
+				};
+				
+				var res = showModalDialog(top.aras.getScriptsURL() + 'searchDialog.html', param, 'dialogHeight:450px; dialogWidth:950px; status:0; help:0; resizable:1');
+				if (res == undefined) return;
+				if (res.length < 1)
+				{
+					return;
+				}
+				
+				var resCopied = new Array();
+				for (var i = 0; i < res.length; i++) resCopied.push(res[i]);
+				
+				return  "'" + resCopied.join("','") + "'"
+
+			}
+			
+			function clearGrid(which) 
+			{
+				which.turnEditOff();
+				which.clear();
+			}
+			
+			function chooseButton() 
+			{
+				//Get Value
+				var e = document.getElementById("RelationshipList2");
+				var strItem = e.options[e.selectedIndex].value;
+				
+				//Choose Items
+				var Items = openItemBrowserChooser(strItem);
+				
+				//Add to Grid
+				addItemsToGrid(strItem, Items);
+			}
+			
+			function addItemsToGrid(strItem, Items) 
+			{
+				//AML to get items using condition IN
+				var qry = inn.newItem();
+				var amlQuery = '<AML>' +
+					'<Item type=\"' + strItem + '\" action=\"get\" select=\"keyed_name\">' +
+						'<id condition=\"IN\">' + Items + '</id>' +
+					'</Item>' +
+				'</AML>';
+				
+				qry.loadAML(amlQuery)
+				var Result = qry.apply();
+				if (Result.isError())
+				{
+					alert(Result.getErrorDetail() + ':  Unable to run query');
+					return;
+				}
+				var Items = Result.getItemsByXPath("//Result/Item");
+				
+				//Add to grid
+				//Either in here or call another function
+				for (var i=0; i < Items.getItemCount(); i++) 
+				{
+				}
+				
+				
+			
+			}
+			
+			
+			function setItemVisability(enabled)
+			{
+				if (enabled == 1)
+				{
+					document.all.selectItem.disabled = false;
+					return;
+				}
+				else
+				{
+					document.all.selectItem.disabled = true;
+					return;
+				}
+			}
+			
+			function queryRelationshiptypes(relationship) 
+			{
+				debugger;
+				////get Dropdown Control Element 
+				//var div_id = getFieldByName("RelationshipList").id; 
+				//var control_id = div_id.substring(0, div_id.indexOf("span")); 
+				//var select = document.getElementById(control_id);
+				
+				var qry = inn.newItem();
+				var amlQuery = '<AML>' +
+					'<Item type=\"RelationshipType\" action=\"get\" select=\"source_id, related_id, name, label\">' +
+						'<source_id>' +
+							'<Item type=\"ItemType\" action=\"get\"></Item>' +
+						'</source_id>' +
+						'<related_id>' +
+							'<Item type=\"ItemType\" action=\"get\">' +
+								'<name>' + relationship + '</name>' +
+							'</Item>' +
+						'</related_id>' +
+					'</Item>' +
+				'</AML>';
+				
+				qry.loadAML(amlQuery)
+				var Result = qry.apply();
+				if (Result.isError())
+				{
+					alert(Result.getErrorDetail() + ':  Unable to run query');
+					return;
+				}
+				var Items = Result.getItemsByXPath("//Result/Item[@type='RelationshipType']");
+				//var Items = Result.getItemsByXPath("//Result/source_id");
+				
+				for (var i=0; i < Items.getItemCount(); i++) 
+				{
+					var RelationshipTypeItem = Items.getItemByIndex(i);
+					var SourceItem = RelationshipTypeItem.getPropertyItem("source_id");
 					
-		myGridControl.addRow("ThisRow1","Test" + "|" + "<checkbox state=0>","ThisRow1");					
-	}
-	
-	function setItem() 
-	{
-		//debugger;
-		if (!document.all.Itemtype.value)
-		{
-			return;
-		}
-		var Item = openItemBrowser(document.all.Itemtype.value);
-		if(Item)
-		{
-			document.all.Item.value = Item;
-		}
-	}
-	
-	function setItemtype() 
-	{
-		
-		var Item = openItemBrowser("itemtype");
-		//debugger;
-		if(Item)
-		{
-			document.all.Itemtype.value = Item;
-			//Clear item instance
-			document.all.Item.value = "";
-		}
-	}
-	
-	function openItemBrowser(findType)
-	{
-		var param = {
-			aras: window.top.aras,
-			itemtypeName: findType,
-			multiselect: false
-		};
-		
-		var res = showModalDialog(top.aras.getScriptsURL() + 'searchDialog.html', param, 'dialogHeight:450px; dialogWidth:950px; status:0; help:0; resizable:1');
-		if (res == undefined) return;
-		
-		searchedItem = res.item;
-		if (!searchedItem)
-		{
-			return;
-		}
-		var keyed_name = top.aras.getKeyedNameEx(searchedItem);
-		return keyed_name;
-	}
-    
-	function openItemBrowserFiltered() 
-	{
-	}
-	
-	function clearGrid(which) 
-	{
-		which.turnEditOff();
-		which.clear();
-	}
-	
-	function setItemVisability(enabled)
-	{
-		if (enabled == 1)
-		{
-			document.all.selectItem.disabled = false;
-			return;
-		}
-		else
-		{
-			document.all.selectItem.disabled = true;
-			return;
-		}
-	}
-	
-	function queryRelationshiptypes(relationship) 
-	{
-	}
-	
-	//function OpenSearchDialog_Assignee(IT_Name)
-	//{
-	//	var param = {
-	//		aras: top.aras,
-	//		itemtypeName: IT_Name,
-	//		itemContext: item,
-	//		itemSelectedID: currSelRowId,
-	//		sourceItemTypeName: curITName,
-	//		sourcePropertyName: curPropName,
-	//		multiselect: false
-	//	};
-	//	var searchedItem;
-	//	var dlgRes = showModalDialog('searchDialog.html', param, 'dialogHeight:450px; dialogWidth:700px; status:0; help:0; resizable:1');
-	//	if (dlgRes == undefined) return false;
-	//	searchedItem = dlgRes.item;
-	//	try
-	//	{
-	//		if (dlgRes.itemID)
-	//		{
-	//			var keyedName = dlgRes.keyed_name;
-	//			var res = dlgRes.itemID;
-	//		}
-	//	catch (ex)
-	//	{}
-	//	if (!searchedItem)
-	//	{
-	//		top.aras.AlertError(top.aras.getResource("PLM", "impactmatrix.message.item_should_be_selected"));
-	//		return;
-	//	}
-	//	if (!searchedItem)
-	//	{
-	//		return;
-	//	}
-	//	var assigneeId = top.aras.getItemProperty(searchedItem, "id", "");
-	//	var assigneeName = top.aras.getItemProperty(searchedItem, "keyed_name", "");
-	//	//MyGrid.cells(rowId, col).setText(assigneeId);
-	//	MyGrid.cells(rowId, 1).setValue(assigneeName);
-	//}
+					//select.options[i]= new Option(RelationshipTypeItem.getProperty("name"), RelationshipTypeItem.getProperty("id"));
+					
+					//http://chiragrdarji.wordpress.com/2007/06/06/add-items-in-drop-down-list-or-list-box-using-javascript/
+					var opt = document.createElement("option");
+        
+					// Add an Option object to Drop Down/List Box
+					document.getElementById("RelationshipList2").options.add(opt);
+					// Assign text and value to Option object
+					opt.text = RelationshipTypeItem.getProperty("name");
+					opt.value = SourceItem.getItembyIndex(0).getProperty("name");
+					
+				}			
+			}
+			
+			//function OpenSearchDialog_Assignee(IT_Name)
+			//{
+			//	var param = {
+			//		aras: top.aras,
+			//		itemtypeName: IT_Name,
+			//		itemContext: item,
+			//		itemSelectedID: currSelRowId,
+			//		sourceItemTypeName: curITName,
+			//		sourcePropertyName: curPropName,
+			//		multiselect: false
+			//	};
+			//	var searchedItem;
+			//	var dlgRes = showModalDialog('searchDialog.html', param, 'dialogHeight:450px; dialogWidth:700px; status:0; help:0; resizable:1');
+			//	if (dlgRes == undefined) return false;
+			//	searchedItem = dlgRes.item;
+			//	try
+			//	{
+			//		if (dlgRes.itemID)
+			//		{
+			//			var keyedName = dlgRes.keyed_name;
+			//			var res = dlgRes.itemID;
+			//		}
+			//	catch (ex)
+			//	{}
+			//	if (!searchedItem)
+			//	{
+			//		top.aras.AlertError(top.aras.getResource("PLM", "impactmatrix.message.item_should_be_selected"));
+			//		return;
+			//	}
+			//	if (!searchedItem)
+			//	{
+			//		return;
+			//	}
+			//	var assigneeId = top.aras.getItemProperty(searchedItem, "id", "");
+			//	var assigneeName = top.aras.getItemProperty(searchedItem, "keyed_name", "");
+			//	//MyGrid.cells(rowId, col).setText(assigneeId);
+			//	MyGrid.cells(rowId, 1).setValue(assigneeName);
+			//}
 
-</script>
-<script type="text/javascript" for="MyGrid" event="GridStart(isSuccess)">
-	setGridControlDefaults();
-</script>
-<script type="text/javascript" for="MyGrid" event="GridClick(rowId, col)">
-	//alert("rowId: " + rowId + ", col:" + col);
-	myGridControl.setSelectedRow(rowId, false, false);
-</script>
-<!--<script type="text/javascript" for="MyGrid" event="GridClick(rowId, col)">
-	assigneeGridControl.setSelectedRow(rowId, false, false);
-	OpenSearchDialog_Assignee(rowId, col);
-	return true;
-</script>-->
-<script type="text/javascript" for="MyGrid" event="GridDoubleClick(rowId)">
-</script>
-<script type="text/javascript" for="MyGrid" event="GridEditCell(mode, rowID, col)">
-	mode = 2;
-	//var res = OnAffectedEditCell(mode, rowID, col);
-	//return res;
-	
-	var cell = cells(rowID, parseInt(col));
-	currSelCell = cell;
-	currSelRowId = rowID;
-	currSelCol = col;
-	cell.SetInputHelperIcon("../images/Icons/16x16/16x16_ellipsis.gif");
-	cell.InputHelperEnabled = true;
-	
-</script>
-<style>
-	#MyGrid {
-		display: block;
-		position: absolute;
-		top: 1px;
-		left: 300px;
-	}
-</style>
-<object id="MyGrid" style="width:400px; height:270px;" classid="../cbin/TreeTable.dll#Aras.Client.Controls.GridContainer"></object>
-<br>
+		</script>
+		<script type="text/javascript" for="MyGrid" event="GridStart(isSuccess)">
+			setGridControlDefaults();
+		</script>
+		<script type="text/javascript" for="MyGrid" event="GridClick(rowId, col)">
+			//alert("rowId: " + rowId + ", col:" + col);
+			myGridControl.setSelectedRow(rowId, false, false);
+		</script>
+		<!--<script type="text/javascript" for="MyGrid" event="GridClick(rowId, col)">
+			assigneeGridControl.setSelectedRow(rowId, false, false);
+			OpenSearchDialog_Assignee(rowId, col);
+			return true;
+		</script>-->
+		<script type="text/javascript" for="MyGrid" event="GridDoubleClick(rowId)">
+		</script>
+		<script type="text/javascript" for="MyGrid" event="GridEditCell(mode, rowID, col)">
+			mode = 2;
+			//var res = OnAffectedEditCell(mode, rowID, col);
+			//return res;
+			
+			var cell = cells(rowID, parseInt(col));
+			currSelCell = cell;
+			currSelRowId = rowID;
+			currSelCol = col;
+			cell.SetInputHelperIcon("../images/Icons/16x16/16x16_ellipsis.gif");
+			cell.InputHelperEnabled = true;
+			
+		</script>
+		<style>
+			#MyGrid {
+				display: block;
+				position: absolute;
+				top: 1px;
+				left: 300px;
+			}
+		</style>
 
-<table border="0" cellpadding="0" cellspacing="3">
-	<tr>
-		<td>
-			Itemtype:
-		</td>
-		<td>
-			<input type="text" name="Itemtype">
-		</td>
-		<td>
-			<input id="selectItemtype" name="selectItemtype" size="4" type="button" value="Itemtype" onclick="setItemtype()">
-		</td>
-	</tr>
-	<tr>
-		<td>
-			Item:
-		</td>
-		<td>
-			<input type="text" name="Item">
-		</td>
-		<td>
-			<input id="selectItem" name="selectItem" size="4" type="button" value="Item" onclick="setItem()">
-		</td>
-	</tr>
-</table>
-<br>
-<table border="0" cellpadding="0" cellspacing="3">
-	<tr>
-		<td>
-			Aras PLM:
-		</td>
-		<td>
-			<input type="checkbox" name="ArasPLM">
-		</td>
-	</tr>
-	<tr>
-		<td>
-			Force Lock Item:
-		</td>
-		<td>
-			<input type="checkbox" name="ForceLock">
-		</td>
-	</tr>
-</table>
+	</head>
+    <body onload="loadDefaults();">
+	
+		<object id="MyGrid" style="width:400px; height:270px;" classid="../cbin/TreeTable.dll#Aras.Client.Controls.GridContainer"></object>
+		<br>
+
+
+		<table border="0" cellpadding="0" cellspacing="3">
+			<tr>
+				<td>
+					Item Type:
+				</td>
+				<td>
+					<input type="text" name="Itemtype" readonly="readonly">
+				</td>
+				<td>
+					<input id="selectItemtype" name="selectItemtype" size="4" type="button" value="Itemtype" onclick="setItemtype()">
+				</td>
+			</tr>
+			<tr>
+				<td>
+					Item Name:
+				</td>
+				<td>
+					<input type="text" name="Item" readonly="readonly">
+				</td>
+				<td>
+					<input id="selectItem" name="selectItem" size="4" type="button" value="Item" onclick="setItem()">
+				</td>
+			</tr>
+			<tr>
+				<td>
+					Choose:
+				</td>
+				<td>
+					<select id="RelationshipList2" name="RelationshipList2">
+					 </select>
+				</td>
+				<td>
+					<input id="chooseItems" name="chooseItems" size="4" type="button" value="Choose Items" onclick="chooseButton()">
+				</td>
+			</tr>
+		</table>
+		<br>
+		<table border="0" cellpadding="0" cellspacing="3">
+			<tr>
+				<td>
+					Aras PLM:
+				</td>
+				<td>
+					<input type="checkbox" name="ArasPLM">
+				</td>
+			</tr>
+			<tr>
+				<td>
+					Force Lock Item:
+				</td>
+				<td>
+					<input type="checkbox" name="ForceLock">
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>
