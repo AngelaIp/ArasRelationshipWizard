@@ -24,20 +24,24 @@
 				myGridControl = document.MyGrid;
 				myGridControl.Delimeter = "|";
 				myGridControl.DrawGrid = true;
-				myGridControl.HeaderBGColor = "#d4d0c8";
 				myGridControl.noSort = false;
-				myGridControl.setColumnCount(2);
-				myGridControl.setInitWidths("320|80");
-				myGridControl.setHorAligns("LEFT|CENTER");
-				myGridControl.SetHeaderCol(0, "Task Templates");
-				myGridControl.SetHeaderCol(1, "Select");
-				myGridControl.Editable = true;
+				myGridControl.ColumnDraggable = false;
+				myGridControl.Editable = false;
 				myGridControl.Justify = true;
-				//myGridControl.SetColumnProperties('type=NOEDIT', 0);
-				myGridControl.SetColumnProperties('type=EDIT', 0);
-				myGridControl.SetColumnProperties('type=EDIT', 1);
+				myGridControl.HeaderBGColor = "#d4d0c8";
+				myGridControl.setColumnCount(3);
+				myGridControl.setInitWidths("80|320|300");
+				myGridControl.setHorAligns("LEFT|CENTER|LEFT");
+				myGridControl.SetHeaderCol(0, "Item Type");
+				myGridControl.SetHeaderCol(1, "Item Name");
+				myGridControl.SetHeaderCol(2, "Result");
+
+				myGridControl.SetColumnProperties('type=noedit', 0);
+				myGridControl.SetColumnProperties('type=noedit', 1);
+				myGridControl.SetColumnProperties('type=noedit', 2);
 							
-				myGridControl.addRow("ThisRow1","Test" + "|" + "<checkbox state=0>","ThisRow1");					
+				myGridControl.addRow("ThisRow1","Part" + "|" + "ABC123" + "|" + "<checkbox state=0>","ThisRow1");					
+				myGridControl.addRow("ThisRow2","Part" + "|" + "ABC123" + "|" + "OK","ThisRow2");					
 			}
 			
 			function loadDefaults()
@@ -112,7 +116,7 @@
 			
 			function openItemBrowserChooser(findType) 
 			{
-				debugger;
+				//debugger;
 				var param = {
 					aras: window.top.aras,
 					itemtypeName: findType,
@@ -154,6 +158,7 @@
 			
 			function addItemsToGrid(strItem, Items) 
 			{
+				debugger;
 				//AML to get items using condition IN
 				var qry = inn.newItem();
 				var amlQuery = '<AML>' +
@@ -172,13 +177,12 @@
 				var Items = Result.getItemsByXPath("//Result/Item");
 				
 				//Add to grid
-				//Either in here or call another function
 				for (var i=0; i < Items.getItemCount(); i++) 
 				{
+					var Item = Items.getItemByIndex(i);
+					var id = Item.getID();
+					myGridControl.addRow(id,Item.getAttribute("type") + "|" + Item.getProperty("keyed_name") + "|" + "",id);
 				}
-				
-				
-			
 			}
 			
 			
@@ -198,7 +202,7 @@
 			
 			function queryRelationshiptypes(relationship) 
 			{
-				debugger;
+				//debugger;
 				////get Dropdown Control Element 
 				//var div_id = getFieldByName("RelationshipList").id; 
 				//var control_id = div_id.substring(0, div_id.indexOf("span")); 
