@@ -167,6 +167,21 @@
 			
 			function clearPassed()
 			{
+				debugger;
+				//Get all items
+				grid = document.MyGrid;
+				
+				var rowId, rowIds = grid.getAllItemIds(';').split(';');
+			    if (rowIds.length == 0) return;
+			    for (var i = 0; i < rowIds.length; i++)
+			    {
+					rowId = rowIds[i];
+					
+					if (grid.GetCellValue(rowId, 5) == "OK")
+					{
+						grid.deleteRow(rowId);
+					}
+				}			
 			}
 			
 			function chooseButton() 
@@ -232,7 +247,7 @@
 			
 			function CreateRelations() 
 			{
-				debugger;
+				//debugger;
 				grid = document.MyGrid;
 				var ids = grid.getAllItemIds("|");
 				var id_array = ids.split("|");
@@ -483,7 +498,6 @@
 		<object id="MyGrid" style="width:600px; height:270px;" classid="../cbin/TreeTable.dll#Aras.Client.Controls.GridContainer"></object>
 		<br>
 
-
 		<table border="0" cellpadding="0" cellspacing="3">
 			<tr>
 				<td>
@@ -522,38 +536,41 @@
 		</table>
 		<br>
 		<table border="0" cellpadding="0" cellspacing="3">
-				<tr>
-					<td>
-						Create Relationship:
-					</td>
-					<td>
-						<input id="CreateRelationship" name="CreateRelationship" size="4" type="button" value="Create Relationship" onclick="CreateRelations()">
-					</td>
-				</tr>
-				<tr>
-					<td>
-						Delete Selected Row:
-					</td>
-					<td>
-						<input id="DeleteSelected" name="DeleteSelected" size="4" type="button" value="Delete Selected Rows" onclick="RemoveItemsFromGrid()">
-					</td>
-				</tr>
-				<tr>
-					<td>
-						Clear Grid:
-					</td>
-					<td>
-						<input id="ClearGrid" name="ClearGrid" size="4" type="button" value="Clear Grid" onclick="clearGrid()">
-					</td>
-				</tr>
-				<tr>
-					<td>
-						Clear Successful Items:
-					</td>
-					<td>
-						<input id="ClearPassed" name="ClearPassed" size="4" type="button" value="Delete Selected Rows" onclick="clearPassed()">
-					</td>
-				</tr>
+			<tr>
+				<td>
+					Create Relationship:
+				</td>
+				<td>
+					<input id="CreateRelationship" name="CreateRelationship" size="4" type="button" value="Create Relationship" onclick="CreateRelations()">
+				</td>
+			</tr>
+		</table>
+		<br>
+		<table border="0" cellpadding="0" cellspacing="3">
+			<tr>
+				<td>
+					Delete Selected Row:
+				</td>
+				<td>
+					<input id="DeleteSelected" name="DeleteSelected" size="4" type="button" value="Delete Selected Rows" onclick="RemoveItemsFromGrid()">
+				</td>
+			</tr>
+			<tr>
+				<td>
+					Clear Successfully Added Items:
+				</td>
+				<td>
+					<input id="ClearPassed" name="ClearPassed" size="4" type="button" value="Clear Passed" onclick="clearPassed()">
+				</td>
+			</tr>
+			<tr>
+				<td>
+					Clear Grid:
+				</td>
+				<td>
+					<input id="ClearGrid" name="ClearGrid" size="4" type="button" value="Clear Grid" onclick="clearGrid()">
+				</td>
+			</tr>
 		</table>
 		<br>
 		<table border="0" cellpadding="0" cellspacing="3">
