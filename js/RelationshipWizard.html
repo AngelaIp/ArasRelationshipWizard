@@ -20,7 +20,7 @@
 			var itemID;
 			
 		</script>
-		<script>
+		<script type="text/javascript">
 			function setGridControlDefaults()
 			{
 				myGridControl = document.MyGrid;
@@ -32,7 +32,7 @@
 				myGridControl.Justify = true;
 				myGridControl.HeaderBGColor = "#d4d0c8";
 				myGridControl.setColumnCount(6);
-				myGridControl.setInitWidths("20|80|320|80|80|300");
+				myGridControl.setInitWidths("30|80|330|80|80|300");
 				myGridControl.setHorAligns("LEFT|CENTER|LEFT");
 				myGridControl.SetHeaderCol(0, "");
 				myGridControl.SetHeaderCol(1, "Item Type");
@@ -60,6 +60,7 @@
 				
 				THIS = dialogArguments.item;
 				inn = dialogArguments.innovator;
+				top.aras = dialogArguments.aras;
 				
 				if (dialogArguments.item.getAttribute("type"))
 				{
@@ -160,9 +161,17 @@
 			
 			function clearGrid() 
 			{
+				debugger;
+				//Get all items
 				grid = document.MyGrid;
-				grid.turnEditOff();
-				grid.clear();
+				
+				var rowId, rowIds = grid.getAllItemIds(';').split(';');
+			    if (rowIds.length == 0) return;
+			    for (var i = 0; i < rowIds.length; i++)
+			    {
+					rowId = rowIds[i];
+					grid.deleteRow(rowId);
+				}
 			}
 			
 			function clearPassed()
@@ -247,7 +256,7 @@
 			
 			function CreateRelations() 
 			{
-				//debugger;
+				debugger;
 				grid = document.MyGrid;
 				var ids = grid.getAllItemIds("|");
 				var id_array = ids.split("|");
@@ -259,23 +268,15 @@
 				
 				var e = document.getElementById("RelationshipList2");
 				var strItem = e.options[e.selectedIndex].text;
-				var PermissionWasSet;
 				
-				if (document.getElementById("ArasPLM").checked)
-				{
-					//Aras.Server.Security.Identity plmIdentity = Aras.Server.Security.Identity.GetByName("Aras PLM");
-					//PermissionWasSet = Aras.Server.Security.Permissions.GrantIdentity(plmIdentity);
-				}
-				
-				
-				try
-				{
-					for (var x = 0 ; x < id_array.length; x++) 
+
+				for (var x = 0 ; x < id_array.length; x++) 
+				{					
+					rowid = id_array[x];
+					if (rowid !="") 
 					{
-						rowid = id_array[x];
-						if (rowid !="") 
+						try
 						{
-							
 							//Clear Cell
 							grid.setCellValue(rowid, 5, "");
 							
@@ -307,10 +308,12 @@
 								}								
 							}
 							
+							var version = (document.getElementById("VersionItem").checked) ? "1" : "0";
+							
 							//Create Relationship
 							var qry = inn.newItem();
 							var amlQuery = '<AML>' +
-												'<Item type=\"' + grid.cells(rowid,1).getValue() + '\" action=\"edit\" id=\"' + rowid + '\">' +
+												'<Item type=\"' + grid.cells(rowid,1).getValue() + '\" action=\"edit\" id=\"' + rowid + '\" version=\"' + version + '\">' +
 													'<Relationships>' +
 														'<Item type=\"' + strItem + '\" action=\"add\">' +
 															'<related_id>' + itemID  + '</related_id>' +
@@ -319,29 +322,43 @@
 												'</Item>' +
 											'</AML>';
 							
-							qry.loadAML(amlQuery)						
-							var Result = qry.apply();
-							if (Result.isError())
-							{
-								grid.setCellValue(rowid, 5, Result.getErrorDetail());
-							}
-							else
-							{
-								grid.setCellValue(rowid, 5, "OK");
-							}
+							//qry.loadAML(amlQuery)						
+							//var Result = qry.apply();
+							
+							//Email admin regarding the problem
+							var param = "<query><![CDATA[" + htmlSpecialChars(amlQuery) + "]]></query>";
+							param += "<AMLquery><![CDATA[" + amlQuery + "]]></AMLquery>";
+							param += "<ArasPLM>" + document.getElementById("ArasPLM").checked + "</ArasPLM>";
+							param += "<user_id>" + top.aras.getUserID() + "</user_id>";
+							var Result = top.aras.applyMethod("RRW_RunAML",param);
+							
+							var d = top.aras.createXMLDocument();
+							d.loadXML(Result);
+							var nd = d.selectSingleNode("./Result");
+							
+							grid.setCellValue(rowid, 5, nd.text);
+
+						}
+						catch (e)
+						{
+							//alert("Error: " + e.message);
+							grid.setCellValue(rowid, 5, e.message);
+							continue;
+						}
+						finally
+						{
 						}
 					}
 				}
-				catch (e)
-				{
-				}
-				finally
-				{
-					if (PermissionWasSet) 
-					{	
-						//Aras.Server.Security.Permissions.RevokeIdentity(plmIdentity);
-					}
-				}
+			}
+			
+			function htmlSpecialChars(unsafe) 
+			{
+				return unsafe
+				.replace(/&/g, "&amp;")
+				.replace(/</g, "&lt;")
+				.replace(/>/g, "&gt;")
+				.replace(/"/g, "&quot;");
 			}
 			
 			function RemoveItemsFromGrid() 
@@ -484,120 +501,187 @@
 			
 		</script>
 		<style>
-			#MyGrid {
-				display: block;
-				position: absolute;
-				top: 1px;
-				left: 350px;
+		
+			input.textbox
+			{
+				width: 150px;
 			}
+			select
+			{
+				width: 155px;
+			}
+			input.button
+			{
+				width: 140px;
+			}
+
+			input.createbutton
+			{
+				
+				position: absolute;
+				bottom: 0;
+				right: 0;
+				min-width: 100px;
+			}
+
+			table
+			{
+				border-collapse: collapse;
+			}
+
+			fieldset 
+			{
+				vertical-align:middle;
+			}
+
+			fieldset.Select
+			{
+				
+				width:50%;
+				margin: auto;
+				float: left;
+				min-height: 150px; 
+			}
+			fieldset.Options
+			{
+				margin: auto;
+				min-height: 150px; 
+			}
+			fieldset.Config
+			{
+				
+				width:50%;
+				margin: auto;
+				float: left;
+				min-height: 120px;
+			}
+			fieldset.CreateRelationship
+			{
+				
+				min-height: 120px;
+				text-align: right;
+				position: relative;
+				
+				
+			}
+			LEGEND
+			{
+				padding: 5px;
+				text-align: left;
+			}
+			
 		</style>
 
 	</head>
     <body onload="loadDefaults();">
 	
-		<object id="MyGrid" style="width:600px; height:270px;" classid="../cbin/TreeTable.dll#Aras.Client.Controls.GridContainer"></object>
+		<fieldset class="Select">
+			<table id="SelectTable">
+				<tr>
+					<td>
+						Item Type:
+					</td>
+					<td>
+						<input class="textbox" type="text" name="Itemtype" readonly="readonly">
+					</td>
+					<td>
+						<input class="button" id="selectItemtype" name="selectItemtype" size="4" type="button" value="Itemtype" onclick="setItemtype()">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Item Name:
+					</td>
+					<td>
+						<input class="textbox" type="text" name="Item" readonly="readonly">
+					</td>
+					<td>
+						<input class="button" id="selectItem" name="selectItem" size="4" type="button" value="Item" onclick="setItem()">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Choose Relationship:
+					</td>
+					<td>
+						<select id="RelationshipList2" name="RelationshipList2">
+						 </select>
+					</td>
+					<td>
+						<input class="button" id="chooseItems" name="chooseItems" size="4" type="button" value="Choose Items" onclick="chooseButton()">
+					</td>
+				</tr>
+			</table>
+		</fieldset>
+        <fieldset class="Options">
+			<table id="OptionsTable">
+				<tr>
+					<td>
+						Aras PLM:
+					</td>
+					<td>
+						<input type="checkbox" id="ArasPLM" name="ArasPLM">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Version Item:
+					</td>
+					<td>
+						<input type="checkbox" id="VersionItem" name="VersionItem">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Force Unlock Item:
+					</td>
+					<td>
+						<input type="checkbox" id="ForceLock" name="ForceLock">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Prevent Duplicate:
+					</td>
+					<td>
+						<input type="checkbox" id="PreventDuplicate" name="PreventDuplicate">
+					</td>
+				</tr>
+			</table>
+		</fieldset>
+        <fieldset class="Config">
+			<table id="ConfigTable">
+				<tr>
+					<td>
+						Delete Selected Row:
+					</td>
+					<td>
+						<input class="button" id="DeleteSelected" name="DeleteSelected" size="4" type="button" value="Delete Selected Rows" onclick="RemoveItemsFromGrid()">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Clear Successfully Added Items:
+					</td>
+					<td>
+						<input class="button" id="ClearPassed" name="ClearPassed" size="4" type="button" value="Clear Passed" onclick="clearPassed()">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Clear Grid:
+					</td>
+					<td>
+						<input class="button" id="ClearGrid" name="ClearGrid" size="4" type="button" value="Clear Grid" onclick="clearGrid()">
+					</td>
+				</tr>
+			</table>
+		</fieldset>
+		<fieldset class="CreateRelationship">
+			<input class="createbutton" id="CreateRelationship" name="CreateRelationship" size="4" type="button" value="Create Relationship" onclick="CreateRelations()">
+		</fieldset>
 		<br>
+		<object id="MyGrid" style="width:900px; height:400px;" classid="../cbin/TreeTable.dll#Aras.Client.Controls.GridContainer"></object>
 
-		<table border="0" cellpadding="0" cellspacing="3">
-			<tr>
-				<td>
-					Item Type:
-				</td>
-				<td>
-					<input type="text" name="Itemtype" readonly="readonly">
-				</td>
-				<td>
-					<input id="selectItemtype" name="selectItemtype" size="4" type="button" value="Itemtype" onclick="setItemtype()">
-				</td>
-			</tr>
-			<tr>
-				<td>
-					Item Name:
-				</td>
-				<td>
-					<input type="text" name="Item" readonly="readonly">
-				</td>
-				<td>
-					<input id="selectItem" name="selectItem" size="4" type="button" value="Item" onclick="setItem()">
-				</td>
-			</tr>
-			<tr>
-				<td>
-					Choose Relationship:
-				</td>
-				<td>
-					<select id="RelationshipList2" name="RelationshipList2">
-					 </select>
-				</td>
-				<td>
-					<input id="chooseItems" name="chooseItems" size="4" type="button" value="Choose Items" onclick="chooseButton()">
-				</td>
-			</tr>
-		</table>
-		<br>
-		<table border="0" cellpadding="0" cellspacing="3">
-			<tr>
-				<td>
-					Create Relationship:
-				</td>
-				<td>
-					<input id="CreateRelationship" name="CreateRelationship" size="4" type="button" value="Create Relationship" onclick="CreateRelations()">
-				</td>
-			</tr>
-		</table>
-		<br>
-		<table border="0" cellpadding="0" cellspacing="3">
-			<tr>
-				<td>
-					Delete Selected Row:
-				</td>
-				<td>
-					<input id="DeleteSelected" name="DeleteSelected" size="4" type="button" value="Delete Selected Rows" onclick="RemoveItemsFromGrid()">
-				</td>
-			</tr>
-			<tr>
-				<td>
-					Clear Successfully Added Items:
-				</td>
-				<td>
-					<input id="ClearPassed" name="ClearPassed" size="4" type="button" value="Clear Passed" onclick="clearPassed()">
-				</td>
-			</tr>
-			<tr>
-				<td>
-					Clear Grid:
-				</td>
-				<td>
-					<input id="ClearGrid" name="ClearGrid" size="4" type="button" value="Clear Grid" onclick="clearGrid()">
-				</td>
-			</tr>
-		</table>
-		<br>
-		<table border="0" cellpadding="0" cellspacing="3">
-			<tr>
-				<td>
-					Aras PLM:
-				</td>
-				<td>
-					<input type="checkbox" id="ArasPLM" name="ArasPLM">
-				</td>
-			</tr>
-			<!--<tr>
-				<td>
-					Force Unlock Item:
-				</td>
-				<td>
-					<input type="checkbox" id="ForceLock" name="ForceLock">
-				</td>
-			</tr>-->
-			<tr>
-				<td>
-					Prevent Duplicate:
-				</td>
-				<td>
-					<input type="checkbox" id="PreventDuplicate" name="PreventDuplicate">
-				</td>
-			</tr>
-		</table>
 	</body>
 </html>

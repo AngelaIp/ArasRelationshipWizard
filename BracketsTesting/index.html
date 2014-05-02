@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <link rel="stylesheet" href="main.css">
+	</head>
+    <body onload="loadDefaults();">
+	
+		<fieldset class="Select">
+			<legend>Group 1</legend>
+			<table id="SelectTable">
+				<tr>
+					<td>
+						Item Type:
+					</td>
+					<td>
+						<input class="textbox" type="text" name="Itemtype" readonly="readonly">
+					</td>
+					<td>
+						<input class="button" id="selectItemtype" name="selectItemtype" size="4" type="button" value="Itemtype" onclick="setItemtype()">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Item Name:
+					</td>
+					<td>
+						<input class="textbox" type="text" name="Item" readonly="readonly">
+					</td>
+					<td>
+						<input class="button" id="selectItem" name="selectItem" size="4" type="button" value="Item" onclick="setItem()">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Choose Relationship:
+					</td>
+					<td>
+						<select id="RelationshipList2" name="RelationshipList2">
+						 </select>
+					</td>
+					<td>
+						<input class="button" id="chooseItems" name="chooseItems" size="4" type="button" value="Choose Items" onclick="chooseButton()">
+					</td>
+				</tr>
+			</table>
+		</fieldset>
+        <fieldset class="Options">
+			<legend>Group 2</legend>
+			<table id="OptionsTable">
+				<tr>
+					<td>
+						Aras PLM:
+					</td>
+					<td>
+						<input type="checkbox" id="ArasPLM" name="ArasPLM">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Version Item:
+					</td>
+					<td>
+						<input type="checkbox" id="VersionItem" name="VersionItem">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Force Unlock Item:
+					</td>
+					<td>
+						<input type="checkbox" id="ForceLock" name="ForceLock">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Prevent Duplicate:
+					</td>
+					<td>
+						<input type="checkbox" id="PreventDuplicate" name="PreventDuplicate">
+					</td>
+				</tr>
+			</table>
+		</fieldset>
+        
+        <br>
+        
+        <fieldset class="Config">
+			<legend>Group 3</legend>
+			<table id="ConfigTable">
+				<tr>
+					<td>
+						Delete Selected Row:
+					</td>
+					<td>
+						<input class="button" id="DeleteSelected" name="DeleteSelected" size="4" type="button" value="Delete Selected Rows" onclick="RemoveItemsFromGrid()">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Clear Successfully Added Items:
+					</td>
+					<td>
+						<input class="button" id="ClearPassed" name="ClearPassed" size="4" type="button" value="Clear Passed" onclick="clearPassed()">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Clear Grid:
+					</td>
+					<td>
+						<input class="button" id="ClearGrid" name="ClearGrid" size="4" type="button" value="Clear Grid" onclick="clearGrid()">
+					</td>
+				</tr>
+			</table>
+		</fieldset>
+		<fieldset class="CreateRelationship" >
+			<legend>Group 4</legend>
+			Create Relationship: <input class="createbutton" id="CreateRelationship" name="CreateRelationship" size="4" type="button" value="Create Relationship" onclick="CreateRelations()">
+		</fieldset>
+		
+	</body>
+</html>
