@@ -5,9 +5,7 @@
 			top.aras.uiAddConfigLink2Doc4Assembly(document, "TreeTable");
 		</script>
 		<script type="text/javascript">
-			//Global variables
-			// UI
-			
+			//Global variables			
 			var inn;
 			var THIS;
 			
@@ -19,10 +17,21 @@
 			
 			var itemID;
 			
+			//Column Index and Name
+			var LockStatus = ["0",""];
+			var ItemType = ["1","Item Type"];
+			var ItemName = ["2","Item Name"];
+			var Revision = ["3","Revision"];
+			var Gen = ["4","Gen"];
+			var State = ["5","State"];
+			var ResultHeader = ["6","Result"];
+			var RelationshipType = ["7","RelationshipType"];
+
 		</script>
 		<script type="text/javascript">
 			function setGridControlDefaults()
 			{
+				//Setup Grid
 				myGridControl = document.MyGrid;
 				myGridControl.Delimeter = "|";
 				myGridControl.DrawGrid = true;
@@ -31,15 +40,18 @@
 				myGridControl.Editable = false;
 				myGridControl.Justify = true;
 				myGridControl.HeaderBGColor = "#d4d0c8";
-				myGridControl.setColumnCount(6);
-				myGridControl.setInitWidths("30|80|330|80|80|300");
+				myGridControl.setColumnCount(8);
+				myGridControl.setInitWidths("30|80|330|60|40|80|300|100");
 				myGridControl.setHorAligns("LEFT|CENTER|LEFT");
-				myGridControl.SetHeaderCol(0, "");
-				myGridControl.SetHeaderCol(1, "Item Type");
-				myGridControl.SetHeaderCol(2, "Item Name");
-				myGridControl.SetHeaderCol(3, "Revision");
-				myGridControl.SetHeaderCol(4, "State");
-				myGridControl.SetHeaderCol(5, "Result");
+				
+				myGridControl.SetHeaderCol(0, LockStatus[1]);
+				myGridControl.SetHeaderCol(1, ItemType[1]);
+				myGridControl.SetHeaderCol(2, ItemName[1]);
+				myGridControl.SetHeaderCol(3, Revision[1]);
+				myGridControl.SetHeaderCol(4, Gen[1]);
+				myGridControl.SetHeaderCol(5, State[1]);
+				myGridControl.SetHeaderCol(6, ResultHeader[1]);
+				myGridControl.SetHeaderCol(7, RelationshipType[1]);
 
 				myGridControl.SetColumnProperties('type=noedit', 0);
 				myGridControl.SetColumnProperties('type=noedit', 1);
@@ -47,6 +59,8 @@
 				myGridControl.SetColumnProperties('type=noedit', 3);
 				myGridControl.SetColumnProperties('type=noedit', 4);
 				myGridControl.SetColumnProperties('type=noedit', 5);
+				myGridControl.SetColumnProperties('type=noedit', 6);
+				myGridControl.SetColumnProperties('type=noedit', 7);
 				
 				 myGridControl.setMultiselect(true);
 				
@@ -58,6 +72,7 @@
 			{
 				//debugger;
 				
+				//Get information passed from item
 				THIS = dialogArguments.item;
 				inn = dialogArguments.innovator;
 				top.aras = dialogArguments.aras;
@@ -78,8 +93,9 @@
 				{
 					itemID = dialogArguments.itemID;
 				}
-				itemID
 				
+				//HIde relationship type column
+				SetColumnVisible(RelationshipType[0], false, 0);
 				
 			}
 			
@@ -161,22 +177,23 @@
 			
 			function clearGrid() 
 			{
-				debugger;
+				//debugger;
 				//Get all items
 				grid = document.MyGrid;
+				grid.RemoveAllRows();
 				
-				var rowId, rowIds = grid.getAllItemIds(';').split(';');
-			    if (rowIds.length == 0) return;
-			    for (var i = 0; i < rowIds.length; i++)
-			    {
-					rowId = rowIds[i];
-					grid.deleteRow(rowId);
-				}
+				//var rowId, rowIds = grid.getAllItemIds(';').split(';');
+			    //if (rowIds.length == 0) return;
+			    //for (var i = 0; i < rowIds.length; i++)
+			    //{
+				//	rowId = rowIds[i];
+				//	grid.deleteRow(rowId);
+				//}
 			}
 			
 			function clearPassed()
 			{
-				debugger;
+				//debugger;
 				//Get all items
 				grid = document.MyGrid;
 				
@@ -186,7 +203,7 @@
 			    {
 					rowId = rowIds[i];
 					
-					if (grid.GetCellValue(rowId, 5) == "OK")
+					if (grid.GetCellValue(rowId, ResultHeader[0]) == "OK")
 					{
 						grid.deleteRow(rowId);
 					}
@@ -198,28 +215,34 @@
 				//Get Value
 				var e = document.getElementById("RelationshipList2");
 				var strItem = e.options[e.selectedIndex].value;
+				var strRelationship = e.options[e.selectedIndex].text;
 				
 				//Choose Items
 				var Items = openItemBrowserChooser(strItem);
 				if (!Items) return; 
 				
 				//Add to Grid
-				addItemsToGrid(strItem, Items);
+				addItemsToGrid(strItem, strRelationship, Items);
 			}
 			
-			function addItemsToGrid(strItem, Items) 
+			function RunQuery(strItem, Items) 
 			{
 				//debugger;
 				//AML to get items using condition IN
 				var qry = inn.newItem();
 				var amlQuery = '<AML>' +
-					'<Item type=\"' + strItem + '\" action=\"get\" select=\"keyed_name, locked_by_id, state, major_rev\">' +
+					'<Item type=\"' + strItem + '\" action=\"get\" select=\"keyed_name, locked_by_id, state, major_rev, generation\">' +
 						'<id condition=\"IN\">' + Items + '</id>' +
 					'</Item>' +
 				'</AML>';
 				
 				qry.loadAML(amlQuery)
-				var Result = qry.apply();
+				return qry.apply();
+			}
+			
+			function addItemsToGrid(strItem, strRelationship, Items) 
+			{
+				var Result = RunQuery(strItem, Items);
 				if (Result.isError())
 				{
 					alert(Result.getErrorDetail() + ':  Unable to run query');
@@ -249,14 +272,27 @@
 							lockstatus = "<img src=''>";
 					}
 					
+					if (myGridControl.IsItemExists(id))
+					{
+						//debugger;
+						alert("Item already exists in grid");
+						continue;
+					}
+					
 					//Add to grid
-					myGridControl.addRow(id,lockstatus + "|" + Item.getAttribute("type") + "|" + Item.getProperty("keyed_name") + "|" + Item.getProperty("major_rev")  + "|" + Item.getProperty("state") + "|" + "",id);
+					myGridControl.addRow(id,lockstatus + "|" + Item.getAttribute("type") + "|" + Item.getProperty("keyed_name") + "|" + Item.getProperty("major_rev")  + "|" + Item.getProperty("generation")  + "|" + Item.getProperty("state") + "|" + "" + "|" + strRelationship,id);
 				}
+			}
+			
+			function UpdateResult(rowId, colIndex, value) 
+			{
+				grid = document.MyGrid;
+				grid.setCellValue(rowId, colIndex, value);
 			}
 			
 			function CreateRelations() 
 			{
-				debugger;
+				//debugger;
 				grid = document.MyGrid;
 				var ids = grid.getAllItemIds("|");
 				var id_array = ids.split("|");
@@ -265,29 +301,29 @@
 				{
 					return;
 				}
-				
-				var e = document.getElementById("RelationshipList2");
-				var strItem = e.options[e.selectedIndex].text;
-				
+
+				for (var x = 0 ; x < id_array.length; x++) 
+				{
+					rowId = id_array[x];
+					//Clear Cell
+					UpdateResult(rowId, ResultHeader[0], "");
+				}				
 
 				for (var x = 0 ; x < id_array.length; x++) 
 				{					
-					rowid = id_array[x];
-					if (rowid !="") 
+					rowId = id_array[x];
+					if (rowId !="") 
 					{
 						try
-						{
-							//Clear Cell
-							grid.setCellValue(rowid, 5, "");
-							
+						{						
 							//Check Duplicate
 							if (document.getElementById("PreventDuplicate").checked)
 							{
 								var PreventDuplicateQry = inn.newItem();
 								var PreventDuplicateAmlQuery = '<AML>' +
-													'<Item type=\"' + strItem + '\" action=\"get\">' +
+													'<Item type=\"' + grid.cells(rowId,RelationshipType[0]).getValue() + '\" action=\"get\">' +
 														'<related_id>' + itemID + '</related_id>' +
-														'<source_id>' + rowid  + '</source_id>' +
+														'<source_id>' + rowId  + '</source_id>' +
 													'</Item>' +
 												'</AML>';
 								
@@ -295,15 +331,15 @@
 								var PreventDuplicateResult = PreventDuplicateQry.apply();
 								if (PreventDuplicateResult.isError())
 								{
-									grid.setCellValue(rowid, 5, "Error Checking");
+									UpdateResult(rowId, ResultHeader[0], "Error Checking Existing Relationship");
 									continue;
 								}
 								
-								var string = "//Result/Item[@type='" + strItem + "']";
+								var string = "//Result/Item[@type='" + grid.cells(rowId,RelationshipType[0]).getValue() + "']";
 								var PreventDuplicateItems = PreventDuplicateResult.getItemsByXPath(string);
 								if (PreventDuplicateItems.getItemCount() > 0)
 								{
-									grid.setCellValue(rowid, 5, "Relationship Already Exists");
+									UpdateResult(rowId, ResultHeader[0], "Relationship Already Exists");
 									continue;
 								}								
 							}
@@ -313,9 +349,9 @@
 							//Create Relationship
 							var qry = inn.newItem();
 							var amlQuery = '<AML>' +
-												'<Item type=\"' + grid.cells(rowid,1).getValue() + '\" action=\"edit\" id=\"' + rowid + '\" version=\"' + version + '\">' +
+												'<Item type=\"' + grid.cells(rowId,ItemType[0]).getValue() + '\" action=\"edit\" id=\"' + rowId + '\" version=\"' + version + '\">' +
 													'<Relationships>' +
-														'<Item type=\"' + strItem + '\" action=\"add\">' +
+														'<Item type=\"' + grid.cells(rowId,RelationshipType[0]).getValue() + '\" action=\"add\">' +
 															'<related_id>' + itemID  + '</related_id>' +
 														'</Item>' +
 													'</Relationships>' +
@@ -336,13 +372,13 @@
 							d.loadXML(Result);
 							var nd = d.selectSingleNode("./Result");
 							
-							grid.setCellValue(rowid, 5, nd.text);
+							UpdateResult(rowId, ResultHeader[0], nd.text);
 
 						}
 						catch (e)
 						{
 							//alert("Error: " + e.message);
-							grid.setCellValue(rowid, 5, e.message);
+							UpdateResult(rowId, ResultHeader[0], e.message);
 							continue;
 						}
 						finally
@@ -438,6 +474,12 @@
 				}			
 			}
 			
+			function SetColumnVisible(col, visible, col_width)
+			{
+				grid = document.MyGrid;
+				grid.SetColumnVisible(col, visible, col_width);
+			}
+			
 			//function OpenSearchDialog_Assignee(IT_Name)
 			//{
 			//	var param = {
@@ -501,27 +543,26 @@
 			
 		</script>
 		<style>
-		
-			input.textbox
+			.textbox
 			{
-				width: 150px;
+				width: 200px;
 			}
 			select
 			{
-				width: 155px;
+				width: 205px;
 			}
-			input.button
+			.gridButton
 			{
 				width: 140px;
 			}
-
-			input.createbutton
+			.button
 			{
-				
-				position: absolute;
-				bottom: 0;
-				right: 0;
-				min-width: 100px;
+				width: 110px;
+			}
+
+			.createbutton
+			{
+				width: 140px;
 			}
 
 			table
@@ -536,152 +577,132 @@
 
 			fieldset.Select
 			{
-				
-				width:50%;
-				margin: auto;
+				width:70%;
+				margin-bottom: auto;
+				margin-right: 20px;
 				float: left;
-				min-height: 150px; 
+				min-height: 130px; 
 			}
 			fieldset.Options
 			{
-				margin: auto;
-				min-height: 150px; 
+				margin-top: 20px;
+				margin-bottom: auto;
+				min-height: 130px;
+				text-align: right;
 			}
 			fieldset.Config
 			{
-				
-				width:50%;
 				margin: auto;
-				float: left;
 				min-height: 120px;
+				text-align: right;
 			}
 			fieldset.CreateRelationship
 			{
-				
 				min-height: 120px;
 				text-align: right;
 				position: relative;
-				
-				
+				border:0;  
 			}
 			LEGEND
 			{
 				padding: 5px;
 				text-align: left;
 			}
-			
 		</style>
 
 	</head>
     <body onload="loadDefaults();">
-	
-		<fieldset class="Select">
-			<table id="SelectTable">
-				<tr>
-					<td>
-						Item Type:
-					</td>
-					<td>
-						<input class="textbox" type="text" name="Itemtype" readonly="readonly">
-					</td>
-					<td>
-						<input class="button" id="selectItemtype" name="selectItemtype" size="4" type="button" value="Itemtype" onclick="setItemtype()">
-					</td>
-				</tr>
-				<tr>
-					<td>
-						Item Name:
-					</td>
-					<td>
-						<input class="textbox" type="text" name="Item" readonly="readonly">
-					</td>
-					<td>
-						<input class="button" id="selectItem" name="selectItem" size="4" type="button" value="Item" onclick="setItem()">
-					</td>
-				</tr>
-				<tr>
-					<td>
-						Choose Relationship:
-					</td>
-					<td>
-						<select id="RelationshipList2" name="RelationshipList2">
-						 </select>
-					</td>
-					<td>
-						<input class="button" id="chooseItems" name="chooseItems" size="4" type="button" value="Choose Items" onclick="chooseButton()">
-					</td>
-				</tr>
-			</table>
-		</fieldset>
-        <fieldset class="Options">
-			<table id="OptionsTable">
-				<tr>
-					<td>
+		<div>
+			<fieldset class="Select">
+				<legend>Item Configuration</legend>
+				<div>
+					<table>
+						<tr>
+							<td>
+								Item Type
+							</td>
+							<td>
+								<input class="textbox" type="text" name="Itemtype" readonly="readonly">
+							</td>
+							<td>
+								<input class="button" id="selectItemtype" name="selectItemtype" type="button" value="Itemtype" onclick="setItemtype()">
+							</td>
+						</tr>
+						<tr>
+							<td>
+								Item Name:
+							</td>
+							<td>
+								<input class="textbox" type="text" name="Item" readonly="readonly">
+							</td>
+							<td>
+								<input class="button" id="selectItem" name="selectItem" type="button" value="Item" onclick="setItem()">
+							</td>
+						</tr>
+						<tr>
+							<td>
+								Choose Relationship:
+							</td>
+							<td>
+								<select id="RelationshipList2" name="RelationshipList2"></select>
+							</td>
+							<td>
+								<input class="button" id="chooseItems" name="chooseItems" type="button" value="Choose Items" onclick="chooseButton()">
+							</td>
+						</tr>
+					</table>
+				</div>
+			</fieldset>
+			<fieldset class="Options">
+				<legend>Configuration</legend>
+				<div>
+					<div>
 						Aras PLM:
-					</td>
-					<td>
 						<input type="checkbox" id="ArasPLM" name="ArasPLM">
-					</td>
-				</tr>
-				<tr>
-					<td>
+					</div>
+					<div>
 						Version Item:
-					</td>
-					<td>
 						<input type="checkbox" id="VersionItem" name="VersionItem">
-					</td>
-				</tr>
-				<tr>
-					<td>
+					</div>
+					<!--<div>
 						Force Unlock Item:
-					</td>
-					<td>
 						<input type="checkbox" id="ForceLock" name="ForceLock">
-					</td>
-				</tr>
-				<tr>
-					<td>
+					</div>-->
+					<div>
 						Prevent Duplicate:
-					</td>
-					<td>
 						<input type="checkbox" id="PreventDuplicate" name="PreventDuplicate">
-					</td>
-				</tr>
-			</table>
-		</fieldset>
-        <fieldset class="Config">
-			<table id="ConfigTable">
-				<tr>
-					<td>
-						Delete Selected Row:
-					</td>
-					<td>
-						<input class="button" id="DeleteSelected" name="DeleteSelected" size="4" type="button" value="Delete Selected Rows" onclick="RemoveItemsFromGrid()">
-					</td>
-				</tr>
-				<tr>
-					<td>
-						Clear Successfully Added Items:
-					</td>
-					<td>
-						<input class="button" id="ClearPassed" name="ClearPassed" size="4" type="button" value="Clear Passed" onclick="clearPassed()">
-					</td>
-				</tr>
-				<tr>
-					<td>
-						Clear Grid:
-					</td>
-					<td>
-						<input class="button" id="ClearGrid" name="ClearGrid" size="4" type="button" value="Clear Grid" onclick="clearGrid()">
-					</td>
-				</tr>
-			</table>
-		</fieldset>
-		<fieldset class="CreateRelationship">
-			<input class="createbutton" id="CreateRelationship" name="CreateRelationship" size="4" type="button" value="Create Relationship" onclick="CreateRelations()">
-		</fieldset>
-		<br>
-		<object id="MyGrid" style="width:900px; height:400px;" classid="../cbin/TreeTable.dll#Aras.Client.Controls.GridContainer"></object>
+					</div>
+				</div>
+			</fieldset>
 
+			<fieldset class="Config">
+				<legend>Grid</legend>
+				<div>
+					<div>
+						<input class="gridButton" id="DeleteSelected" name="DeleteSelected" type="button" value="Delete Selected Rows" onclick="RemoveItemsFromGrid()">
+					</div>
+					<div>
+						<input class="gridButton" id="ClearPassed" name="ClearPassed" type="button" value="Clear Passed" onclick="clearPassed()">
+					</div>
+					<div>
+						<input class="gridButton" id="ClearGrid" name="ClearGrid" type="button" value="Clear Grid" onclick="clearGrid()">
+					</div>
+
+					<br>
+
+					<div>
+						<input class="gridButton" id="CreateRelationship" name="CreateRelationship" type="button" value="Create Relationship" onclick="CreateRelations()">
+					</div>
+				</div>
+			</fieldset>
+			<!--<fieldset class="CreateRelationship">
+				<legend>Group 4</legend>
+				<div>
+					<input class="createbutton" id="CreateRelationship" name="CreateRelationship" type="button" value="Create Relationship" onclick="CreateRelations()">
+				</div>
+			</fieldset>-->
+		</div>
+		<br><br>
+		<object id="MyGrid" style="width:950px; height:400px;" classid="../cbin/TreeTable.dll#Aras.Client.Controls.GridContainer"></object>
 	</body>
 </html>
