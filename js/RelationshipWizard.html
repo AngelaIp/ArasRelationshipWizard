@@ -26,6 +26,9 @@
 			var State = ["5","State"];
 			var ResultHeader = ["6","Result"];
 			var RelationshipType = ["7","RelationshipType"];
+			
+			//Method Name
+			var MethodName = "RRW_RunAML";
 
 		</script>
 		<script type="text/javascript">
@@ -203,7 +206,7 @@
 			    {
 					rowId = rowIds[i];
 					
-					if (grid.GetCellValue(rowId, ResultHeader[0]) == "OK")
+					if (grid.GetCellValue(rowId, ResultHeader[0]) == "Relationship Created")
 					{
 						grid.deleteRow(rowId);
 					}
@@ -339,14 +342,14 @@
 								var PreventDuplicateItems = PreventDuplicateResult.getItemsByXPath(string);
 								if (PreventDuplicateItems.getItemCount() > 0)
 								{
-									UpdateResult(rowId, ResultHeader[0], "Relationship Already Exists");
+									UpdateResult(rowId, ResultHeader[0], "Error: Relationship Already Exists");
 									continue;
 								}								
 							}
 							
 							var version = (document.getElementById("VersionItem").checked) ? "1" : "0";
 							
-							//Create Relationship
+							//Create AML for Relationship 
 							var qry = inn.newItem();
 							var amlQuery = '<AML>' +
 												'<Item type=\"' + grid.cells(rowId,ItemType[0]).getValue() + '\" action=\"edit\" id=\"' + rowId + '\" version=\"' + version + '\">' +
@@ -357,16 +360,12 @@
 													'</Relationships>' +
 												'</Item>' +
 											'</AML>';
-							
-							//qry.loadAML(amlQuery)						
-							//var Result = qry.apply();
-							
-							//Email admin regarding the problem
-							var param = "<query><![CDATA[" + htmlSpecialChars(amlQuery) + "]]></query>";
-							param += "<AMLquery><![CDATA[" + amlQuery + "]]></AMLquery>";
+														
+							//Run the query on the server so can run as Aras PLM if required.
+							var param = "<AMLquery><![CDATA[" + amlQuery + "]]></AMLquery>";
 							param += "<ArasPLM>" + document.getElementById("ArasPLM").checked + "</ArasPLM>";
 							param += "<user_id>" + top.aras.getUserID() + "</user_id>";
-							var Result = top.aras.applyMethod("RRW_RunAML",param);
+							var Result = top.aras.applyMethod(MethodName,param);
 							
 							var d = top.aras.createXMLDocument();
 							d.loadXML(Result);
@@ -388,14 +387,52 @@
 				}
 			}
 			
-			function htmlSpecialChars(unsafe) 
+			function RefreshGrid()
 			{
-				return unsafe
-				.replace(/&/g, "&amp;")
-				.replace(/</g, "&lt;")
-				.replace(/>/g, "&gt;")
-				.replace(/"/g, "&quot;");
+				//debugger;
+				grid = document.MyGrid;
+				var ids = grid.getAllItemIds("|");
+				var id_array = ids.split("|");
+				
+				if (id_array.length == 0)
+				{
+					return;
+				}
+
+				for (var x = 0 ; x < id_array.length; x++) 
+				{
+					//Get Item Id
+					rowId = id_array[x];
+					
+					//Get Row Index
+					
+					//Get Gen
+					
+					//Get Result
+					
+					//Get ItemType
+					
+					var amlQuery = '<AML>' +
+						'<Item type=' + ItemType + 'id=\"' + rowId + '\" action=\"getItemLastVersion\"></Item>' +
+					'</AML>';
+					
+					//if returned gen greater than current
+						//Delete Row
+						//Add Row at same index
+						
+					//Done
+
+				}
 			}
+			
+			//function htmlSpecialChars(unsafe) 
+			//{
+			//	return unsafe
+			//	.replace(/&/g, "&amp;")
+			//	.replace(/</g, "&lt;")
+			//	.replace(/>/g, "&gt;")
+			//	.replace(/"/g, "&quot;");
+			//}
 			
 			function RemoveItemsFromGrid() 
 			{
@@ -553,23 +590,20 @@
 			}
 			.gridButton
 			{
-				width: 140px;
+				width: 160px;
 			}
 			.button
 			{
 				width: 110px;
 			}
-
 			.createbutton
 			{
 				width: 140px;
 			}
-
 			table
 			{
 				border-collapse: collapse;
 			}
-
 			fieldset 
 			{
 				vertical-align:middle;
@@ -609,7 +643,6 @@
 				text-align: left;
 			}
 		</style>
-
 	</head>
     <body onload="loadDefaults();">
 		<div>
@@ -670,7 +703,11 @@
 					</div>-->
 					<div>
 						Prevent Duplicate:
-						<input type="checkbox" id="PreventDuplicate" name="PreventDuplicate">
+						<input type="checkbox" id="PreventDuplicate" name="PreventDuplicate" checked>
+					</div>
+					<div>
+						Refresh after Create:
+						<input type="checkbox" id="RefreshGrid" name="RefreshGrid" checked>
 					</div>
 				</div>
 			</fieldset>
@@ -679,10 +716,10 @@
 				<legend>Grid</legend>
 				<div>
 					<div>
-						<input class="gridButton" id="DeleteSelected" name="DeleteSelected" type="button" value="Delete Selected Rows" onclick="RemoveItemsFromGrid()">
+						<input class="gridButton" id="DeleteSelected" name="DeleteSelected" type="button" value="Remove Selected Rows" onclick="RemoveItemsFromGrid()">
 					</div>
 					<div>
-						<input class="gridButton" id="ClearPassed" name="ClearPassed" type="button" value="Clear Passed" onclick="clearPassed()">
+						<input class="gridButton" id="ClearPassed" name="ClearPassed" type="button" value="Remove Successfully Created" onclick="clearPassed()">
 					</div>
 					<div>
 						<input class="gridButton" id="ClearGrid" name="ClearGrid" type="button" value="Clear Grid" onclick="clearGrid()">
