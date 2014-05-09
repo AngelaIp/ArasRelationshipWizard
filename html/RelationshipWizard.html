@@ -73,7 +73,7 @@
 			
 			function loadDefaults()
 			{
-				//debugger;
+				
 				
 				//Get information passed from item
 				THIS = dialogArguments.item;
@@ -97,14 +97,14 @@
 					itemID = dialogArguments.itemID;
 				}
 				
-				//HIde relationship type column
+				//Hide relationship type column
 				SetColumnVisible(RelationshipType[0], false, 0);
 				
 			}
 			
 			function setItem() 
 			{
-				//debugger;
+				
 				if (!document.all.Itemtype.value)
 				{
 					return;
@@ -120,9 +120,8 @@
 			
 			function setItemtype() 
 			{
-				
 				var Item = openItemBrowser("itemtype");
-				//debugger;
+				
 				if(Item)
 				{
 					var keyed_name = top.aras.getKeyedNameEx(Item);
@@ -130,9 +129,7 @@
 					//Clear item instance
 					document.all.Item.value = "";
 				}
-				
 				queryRelationshiptypes(Item)
-				
 			}
 			
 			function openItemBrowser(findType)
@@ -157,7 +154,7 @@
 			
 			function openItemBrowserChooser(findType) 
 			{
-				//debugger;
+				
 				var param = {
 					aras: window.top.aras,
 					itemtypeName: findType,
@@ -180,7 +177,7 @@
 			
 			function clearGrid() 
 			{
-				//debugger;
+				
 				//Get all items
 				grid = document.MyGrid;
 				grid.RemoveAllRows();
@@ -196,7 +193,7 @@
 			
 			function clearPassed()
 			{
-				//debugger;
+				
 				//Get all items
 				grid = document.MyGrid;
 				
@@ -208,9 +205,14 @@
 					
 					if (grid.GetCellValue(rowId, ResultHeader[0]) == "Relationship Created")
 					{
-						grid.deleteRow(rowId);
+						DeleteRow(rowId);
 					}
 				}			
+			}
+			
+			function DeleteRow(rowId)
+			{
+				this.grid.deleteRow(rowId);
 			}
 			
 			function chooseButton() 
@@ -224,13 +226,20 @@
 				var Items = openItemBrowserChooser(strItem);
 				if (!Items) return; 
 				
+				var Result = RunQuery(strItem, Items);
+				if (Result.isError())
+				{
+					alert(Result.getErrorDetail() + ':  Unable to run query');
+					return;
+				}
+				
 				//Add to Grid
-				addItemsToGrid(strItem, strRelationship, Items);
+				addItemsToGrid(Result, strRelationship);
 			}
 			
 			function RunQuery(strItem, Items) 
 			{
-				//debugger;
+				
 				//AML to get items using condition IN
 				var qry = inn.newItem();
 				var amlQuery = '<AML>' +
@@ -243,16 +252,15 @@
 				return qry.apply();
 			}
 			
-			function addItemsToGrid(strItem, strRelationship, Items) 
+			function addItemsToGrid(Result, strRelationship) 
 			{
-				var Result = RunQuery(strItem, Items);
-				if (Result.isError())
-				{
-					alert(Result.getErrorDetail() + ':  Unable to run query');
-					return;
-				}
-				var Items = Result.getItemsByXPath("//Result/Item");
+				addItemsToGrid(Result, strRelationship, "");
+			}
+			
+			function addItemsToGrid(Result, strRelationship, InsertIndex) 
+			{
 				
+				var Items = Result.getItemsByXPath("//Result/Item");
 				
 				for (var i=0; i < Items.getItemCount(); i++) 
 				{
@@ -275,15 +283,24 @@
 							lockstatus = "<img src=''>";
 					}
 					
-					if (myGridControl.IsItemExists(id))
+					if (this.grid.IsItemExists(id))
 					{
-						//debugger;
+						
 						alert("Item already exists in grid");
 						continue;
 					}
 					
+					var rowData = lockstatus + "|" + Item.getAttribute("type") + "|" + Item.getProperty("keyed_name") + "|" + Item.getProperty("major_rev")  + "|" + Item.getProperty("generation")  + "|" + Item.getProperty("state") + "|" + "" + "|" + strRelationship;
 					//Add to grid
-					myGridControl.addRow(id,lockstatus + "|" + Item.getAttribute("type") + "|" + Item.getProperty("keyed_name") + "|" + Item.getProperty("major_rev")  + "|" + Item.getProperty("generation")  + "|" + Item.getProperty("state") + "|" + "" + "|" + strRelationship,id);
+					if (InsertIndex == "")
+					{
+						this.grid.addRow(id, rowData, id);
+					}
+					else
+					{
+						this.grid.InsertRowAt(InsertIndex, id, rowData, id);
+					}
+					setLink(id,Item.getAttribute("type"),id, ItemName[0]);
 				}
 			}
 			
@@ -293,9 +310,15 @@
 				grid.setCellValue(rowId, colIndex, value);
 			}
 			
+			function setLink(row_id, row_type, item_id, col) 
+			{
+				this.grid.SetCellTextColor(row_id, col, "#0000FF");
+				this.grid.SetCellLink(row_id, col, "'" + row_type + "','" + item_id + "'");
+			}
+			
 			function CreateRelations() 
 			{
-				//debugger;
+				
 				grid = document.MyGrid;
 				var ids = grid.getAllItemIds("|");
 				var id_array = ids.split("|");
@@ -318,7 +341,8 @@
 					if (rowId !="") 
 					{
 						try
-						{						
+						{			
+							
 							//Check Duplicate
 							if (document.getElementById("PreventDuplicate").checked)
 							{
@@ -334,8 +358,12 @@
 								var PreventDuplicateResult = PreventDuplicateQry.apply();
 								if (PreventDuplicateResult.isError())
 								{
-									UpdateResult(rowId, ResultHeader[0], "Error Checking Existing Relationship");
-									continue;
+									//Need to catch case when no relationships exist and ignore.
+									if (!PreventDuplicateResult.getErrorString() == "No items of type Part Document found.")
+									{
+										UpdateResult(rowId, ResultHeader[0], PreventDuplicateResult.getErrorString());
+										continue;
+									}
 								}
 								
 								var string = "//Result/Item[@type='" + grid.cells(rowId,RelationshipType[0]).getValue() + "']";
@@ -372,7 +400,12 @@
 							var nd = d.selectSingleNode("./Result");
 							
 							UpdateResult(rowId, ResultHeader[0], nd.text);
-
+							
+							//if (document.getElementById("RefreshGrid").checked == true)
+							//{
+							//	RefreshGrid(rowId, nd.text);
+							//}
+							
 						}
 						catch (e)
 						{
@@ -385,11 +418,18 @@
 						}
 					}
 				}
+				
+				if (document.getElementById("RefreshGrid").checked == true)
+				{
+					RefreshGrid();
+				}
+				
 			}
 			
+			//function RefreshGrid(rowId, currentRes)
 			function RefreshGrid()
 			{
-				//debugger;
+				
 				grid = document.MyGrid;
 				var ids = grid.getAllItemIds("|");
 				var id_array = ids.split("|");
@@ -398,30 +438,51 @@
 				{
 					return;
 				}
-
+                
 				for (var x = 0 ; x < id_array.length; x++) 
 				{
 					//Get Item Id
-					rowId = id_array[x];
+					var rowId = id_array[x];
 					
 					//Get Row Index
+					var rowIndex = grid.GetRowIndex(rowId);		
 					
 					//Get Gen
+					var currentGen = grid.cells(rowId,Gen[0]).getValue();
 					
 					//Get Result
+					var res = grid.cells(rowId,ResultHeader[0]).getValue();
+					//var res = currentRes;			
 					
 					//Get ItemType
+					var itemType = grid.cells(rowId,ItemType[0]).getValue();
 					
+					//Get RelationshipType
+					var relationshipType = grid.cells(rowId,RelationshipType[0]).getValue();
+					
+					var qry = inn.newItem();
 					var amlQuery = '<AML>' +
-						'<Item type=' + ItemType + 'id=\"' + rowId + '\" action=\"getItemLastVersion\"></Item>' +
+						'<Item type=\"' + itemType + '\" id=\"' + rowId + '\" action=\"getItemLastVersion\"></Item>' +
 					'</AML>';
 					
+					qry.loadAML(amlQuery)
+					var Result = qry.apply();
+					
+					var Items = Result.getItemsByXPath("//Result/Item");
+					if (Items.getItemCount() != 1)
+					{
+						alert("Error: unable to refresh grid");
+						return;
+					}
+					
 					//if returned gen greater than current
-						//Delete Row
-						//Add Row at same index
-						
-					//Done
-
+					if (Items.getItemByIndex(0).getProperty("generation") > currentGen)
+					{
+						var newID = Items.getItemByIndex(0).getID();
+						DeleteRow(rowId);
+						addItemsToGrid(Result, relationshipType, rowIndex);
+						UpdateResult(newID, ResultHeader[0], res);
+					}
 				}
 			}
 			
@@ -462,7 +523,7 @@
 			
 			function queryRelationshiptypes(relationship) 
 			{
-				//debugger;
+				
 				////get Dropdown Control Element 
 				//var div_id = getFieldByName("RelationshipList").id; 
 				//var control_id = div_id.substring(0, div_id.indexOf("span")); 
@@ -482,7 +543,7 @@
 					'</Item>' +
 				'</AML>';
 				
-				qry.loadAML(amlQuery)
+				qry.loadAML(amlQuery);
 				var Result = qry.apply();
 				if (Result.isError())
 				{
@@ -577,7 +638,9 @@
 			currSelCol = col;
 			cell.SetInputHelperIcon("../images/Icons/16x16/16x16_ellipsis.gif");
 			cell.InputHelperEnabled = true;
-			
+		</script>
+		<script type="text/javascript" for="MyGrid" event="GridLinkClick(strLink)">
+			setTimeout("top.aras.uiShowItem(" + strLink + ", 'tab view', true);", 10);
 		</script>
 		<style>
 			.textbox
