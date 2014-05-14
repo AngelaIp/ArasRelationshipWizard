@@ -1,0 +1,70 @@
+﻿<AML>
+ <Item type="Method" id="76FA9AB3B8B2455A981C52BEF1D7EDAC" action="add">
+  <execution_allowed_to keyed_name="World" type="Identity">A73B655731924CD0B027E4F4D5FCC0A9</execution_allowed_to>
+  <method_code><![CDATA[var inn = new Innovator();
+
+var itm = document.item;
+var itName = top.aras.getItemProperty(itm, 'keyed_name');
+var itID = itm.getAttribute('id');
+
+if (!document.isEditMode)
+{
+	top.aras.AlertError("Tool must be ran in edit mode");
+	return;
+}
+
+var param = new Object();
+param.title = "Reverse Relationship Wizard";
+
+var formName = "Relationship Wizard";
+
+var formItem = inn.getItemByKeyedName("Form", formName);
+if (!formItem)
+{
+	top.aras.AlertError("Form not found");
+	return false;
+}
+var formId = formItem.getID();
+if (!formId)
+{
+	return false;
+} 
+
+param.formId = formId;
+param.isEditMode = "1";
+param.aras = top.aras;
+param.innovator = inn;
+param.itemKeyedName = itName;
+param.item = document.item;
+param.itemID = itID;
+
+var q = new Item("Form", "get");
+q.setAttribute("select", "width,height");
+q.setProperty("id", formId);
+var r = q.apply();
+if (r.isError())
+{
+	this.showError(r);
+	return false;
+}
+
+var width = r.getProperty("width");
+var height = r.getProperty("height");
+if (!width)
+{
+	width = 850;
+}
+if (!height)
+{
+	height = 650;
+}
+
+var res = showModalDialog("ShowFormAsADialog.html", param, "dialogHeight:" + height + "px; dialogWidth:" + width + "px; status:0; help:1; resizable:1; scroll:0;");
+
+if (res)
+{
+}]]></method_code>
+  <method_type>JavaScript</method_type>
+  <name>RelWiz - Open Wizard</name>
+ </Item>
+</AML>

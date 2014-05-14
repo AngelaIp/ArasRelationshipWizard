@@ -1,4 +1,22 @@
-<!DOCTYPE html>
+﻿<AML>
+	<Item type="Form" id="7208ADB24A614FACBBEC24A0DBCB5FEB" action="add">
+		<height>600</height>
+		<stylesheet><![CDATA[../styles/default.css]]></stylesheet>
+		<width>850</width>
+		<name>Relationship Wizard</name>
+		<Relationships>
+			<Item type="Body" id="4CFC7EF41AD34B60A439D95FFCB555CB" action="add">
+				<sort_order>128</sort_order>
+				<source_id keyed_name="Relationship Wizard" type="Form">7208ADB24A614FACBBEC24A0DBCB5FEB</source_id>
+				<Relationships>
+					<Item type="Field" id="0386C3CB39154EFD90F95B6CFF689460" action="add">
+						<border_width>0</border_width>
+						<field_type>html</field_type>
+						<font_color>#000000</font_color>
+						<font_family>arial, helvetica, sans-serif</font_family>
+						<font_size>8pt</font_size>
+						<font_weight>bold</font_weight>
+						<html_code><![CDATA[<!DOCTYPE html>
 <html>
 	<head>
 		<script type="text/javascript">
@@ -234,7 +252,7 @@
 											'</AML>';
 														
 							//Run the query on the server so can run as Aras PLM if required.
-							var param = "<AMLquery><![CDATA[" + amlQuery + "]]></AMLquery>";
+							var param = "<AMLquery><![CDATA[" + amlQuery + "]]]]><![CDATA[></AMLquery>";
 							param += "<ArasPLM>" + document.getElementById("ArasPLM").checked + "</ArasPLM>";
 							param += "<user_id>" + top.aras.getUserID() + "</user_id>";
 							var Result = top.aras.applyMethod(MethodName,param);
@@ -706,4 +724,20 @@
 		<br><br>
 		<object id="MyGrid" style="width:800px; height:250px;" classid="../cbin/TreeTable.dll#Aras.Client.Controls.GridContainer"></object>
 	</body>
-</html>
+</html>]]></html_code>
+						<is_disabled>0</is_disabled>
+						<is_visible>1</is_visible>
+						<label_position>top</label_position>
+						<list_no_blank>0</list_no_blank>
+						<sort_order>128</sort_order>
+						<source_id keyed_name="4CFC7EF41AD34B60A439D95FFCB555CB" type="Body">4CFC7EF41AD34B60A439D95FFCB555CB</source_id>
+						<tab_stop>1</tab_stop>
+						<x>6</x>
+						<y>0</y>
+						<name>html</name>
+					</Item>
+				</Relationships>
+			</Item>
+		</Relationships>
+	</Item>
+</AML>

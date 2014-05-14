@@ -1,0 +1,42 @@
+﻿<AML>
+	<Item type="Form" id="D95D1B10CE6D47CDB7AE755108DBA13D" action="add">
+		<Relationships>
+			<Item type="Body" id="1616C23245254BAD80BECBEC29A02D16" action="add">
+				<source_id keyed_name="Document" type="Form">D95D1B10CE6D47CDB7AE755108DBA13D</source_id>
+				<Relationships>
+					<Item type="Field" id="C2AAAF9E8E5047C88A66DB3358BF6871" action="add">
+						<border_width>0</border_width>
+						<field_type>button</field_type>
+						<font_color>#000000</font_color>
+						<font_family>arial, helvetica, sans-serif</font_family>
+						<font_size>8pt</font_size>
+						<font_weight>bold</font_weight>
+						<is_disabled>0</is_disabled>
+						<is_visible>1</is_visible>
+						<label xml:lang="en">Create Relationships</label>
+						<label_position>top</label_position>
+						<list_no_blank>0</list_no_blank>
+						<sort_order>4992</sort_order>
+						<source_id keyed_name="1616C23245254BAD80BECBEC29A02D16" type="Body">1616C23245254BAD80BECBEC29A02D16</source_id>
+						<tab_stop>1</tab_stop>
+						<x>580</x>
+						<y>240</y>
+						<name>btnCreateRelationship</name>
+						<Relationships>
+							<Item type="Field Event" id="3039FA9F9F6C404CA15D59C94957691D" action="add">
+								<field_event>onclick</field_event>
+								<related_id keyed_name="RelWiz - Open Wizard" type="Method">
+									<Item type="Method" action="get" select="id">
+										<name>RelWiz - Open Wizard</name>
+									</Item>
+								</related_id>
+								<sort_order>128</sort_order>
+								<source_id keyed_name="btnCreateRelationship" type="Field">C2AAAF9E8E5047C88A66DB3358BF6871</source_id>
+							</Item>
+						</Relationships>
+					</Item>
+				</Relationships>
+			</Item>
+		</Relationships>
+	</Item>
+</AML>
