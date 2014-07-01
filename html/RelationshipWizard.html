@@ -626,13 +626,13 @@
 					<table>
 						<tr>
 							<td>
-								Item Type
+								ItemType:
 							</td>
 							<td>
-								<input class="textbox" type="text" name="Itemtype" readonly="readonly">
+								<input class="textbox" type="text" name="Itemtype" readonly="readonly" title="ItemType (Related)">
 							</td>
 							<td>
-								<input class="button" id="selectItemtype" name="selectItemtype" type="button" value="Itemtype" onclick="setItemtype()">
+								<input class="button" id="selectItemtype" name="selectItemtype" type="button" value="Itemtype" onclick="setItemtype()" title="Click to choose ItemType (Related)">
 							</td>
 						</tr>
 						<tr>
@@ -640,10 +640,10 @@
 								Item Name:
 							</td>
 							<td>
-								<input class="textbox" type="text" name="Item" readonly="readonly">
+								<input class="textbox" type="text" name="Item" readonly="readonly" title="Keyed name of the item">
 							</td>
 							<td>
-								<input class="button" id="selectItem" name="selectItem" type="button" value="Item" onclick="setItem()">
+								<input class="button" id="selectItem" name="selectItem" type="button" value="Item" onclick="setItem()" title="Click to select the item instance to create the reverse relationship(s)">
 							</td>
 						</tr>
 						<tr>
@@ -651,10 +651,10 @@
 								Choose Relationship:
 							</td>
 							<td>
-								<select id="RelationshipList2" name="RelationshipList2"></select>
+								<select id="RelationshipList2" name="RelationshipList2" title="Available Relationships"></select>
 							</td>
 							<td>
-								<input class="button" id="chooseItems" name="chooseItems" type="button" value="Choose Items" onclick="chooseButton()">
+								<input class="button" id="chooseItems" name="chooseItems" type="button" value="Choose Items" onclick="chooseButton()" title="Choose Parent Items to create reverse relationship">
 							</td>
 						</tr>
 					</table>
@@ -665,19 +665,19 @@
 				<div>
 					<div>
 						Aras PLM:
-						<input type="checkbox" id="ArasPLM" name="ArasPLM">
+						<input type="checkbox" id="ArasPLM" name="ArasPLM" checked title="When creating the relationship apply as the Aras PLM identity">
 					</div>
 					<div>
 						Version Item:
-						<input type="checkbox" id="VersionItem" name="VersionItem">
+						<input type="checkbox" id="VersionItem" name="VersionItem" title="When checked set 'version = 1' when creating relationship. When unchecked set 'version=0'">
 					</div>
 					<div>
 						Prevent Duplicate:
-						<input type="checkbox" id="PreventDuplicate" name="PreventDuplicate" checked>
+						<input type="checkbox" id="PreventDuplicate" name="PreventDuplicate" checked title="When checked do not recreate the relationship if it already exists">
 					</div>
 					<div>
 						Refresh after Create:
-						<input type="checkbox" id="RefreshGrid" name="RefreshGrid" checked>
+						<input type="checkbox" id="RefreshGrid" name="RefreshGrid" checked title="Refresh the grid after the reverse relationship is created (Create Relationship button)">
 					</div>
 				</div>
 			</fieldset>
@@ -686,19 +686,17 @@
 				<legend>Grid</legend>
 				<div>
 					<div>
-						<input class="gridButton" id="ClearGrid" name="ClearGrid" type="button" value="Clear Grid" onclick="clearGrid()">
+						<input class="gridButton" id="ClearGrid" name="ClearGrid" type="button" value="Clear Grid" onclick="clearGrid()" title="Clear the entire grid">
 					</div>
 					<div>
-						<input class="gridButton" id="DeleteSelected" name="DeleteSelected" type="button" value="Remove Selected Rows" onclick="RemoveItemsFromGrid()">
+						<input class="gridButton" id="DeleteSelected" name="DeleteSelected" type="button" value="Remove Selected Rows" onclick="RemoveItemsFromGrid()" title="Remove the selected row(s) from the grid">
 					</div>
 					<div>
-						<input class="gridButton" id="ClearPassed" name="ClearPassed" type="button" value="Remove Successfully Created" onclick="clearPassed()">
+						<input class="gridButton" id="ClearPassed" name="ClearPassed" type="button" value="Remove Successfully Created" onclick="clearPassed()" title="Remove successfully created row(s) from the grid">
 					</div>
-
-					<br>
-
+					<br></br>
 					<div>
-						<input class="gridButton" id="CreateRelationship" name="CreateRelationship" type="button" value="Create Relationship" onclick="CreateRelations()">
+						<input class="gridButton" id="CreateRelationship" name="CreateRelationship" type="button" value="Create Relationship" onclick="CreateRelations()" title="Create the reverse relationship">
 					</div>
 				</div>
 			</fieldset>
