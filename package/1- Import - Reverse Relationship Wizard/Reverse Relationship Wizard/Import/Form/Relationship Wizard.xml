@@ -1,746 +1,736 @@
-<AML>
-  <Item action="add" id="7208ADB24A614FACBBEC24A0DBCB5FEB" type="Form">
-    <height>600</height>
-    <name>Relationship Wizard</name>
+﻿<AML>
+ <Item type="Form" id="7208ADB24A614FACBBEC24A0DBCB5FEB" action="add">
+  <category_form>0</category_form>
+  <height>600</height>
+  <stylesheet><![CDATA[../styles/default.css]]></stylesheet>
+  <width>850</width>
+  <name>Relationship Wizard</name>
+  <Relationships>
+   <Item type="Body" id="4CFC7EF41AD34B60A439D95FFCB555CB" action="add">
+    <sort_order>128</sort_order>
+    <source_id keyed_name="Relationship Wizard" type="Form">7208ADB24A614FACBBEC24A0DBCB5FEB</source_id>
     <Relationships>
-      <Item action="add" id="4CFC7EF41AD34B60A439D95FFCB555CB" type="Body">
-        <Relationships>
-          <Item action="add" id="0386C3CB39154EFD90F95B6CFF689460" type="Field">
-            <border_width>0</border_width>
-            <field_type>html</field_type>
-            <font_color>#000000</font_color>
-            <font_family>arial, helvetica, sans-serif</font_family>
-            <font_size>8pt</font_size>
-            <font_weight>bold</font_weight>
-            <html_code>
-              <![CDATA[<!DOCTYPE html>
-              <html>
-                      <head>
-                              <script type="text/javascript">
-                                      top.aras.uiAddConfigLink2Doc4Assembly(document, "TreeTable");
-                              </script>
-                              <script type="text/javascript">         
-                                      //Global variables                      
-                                      var inn;
-                                      var THIS;       
-                                      var itemID;
-                                      var gridApplet = null;  
-                                      
-                                      //Column Index and Name
-                                      var LockStatus = ["0",""];
-                                      var ItemType = ["1","Item Type"];
-                                      var ItemName = ["2","Item Name"];
-                                      var Revision = ["3","Revision"];
-                                      var Gen = ["4","Gen"];
-                                      var State = ["5","State"];
-                                      var ResultHeader = ["6","Result"];
-                                      var RelationshipType = ["7","RelationshipType"];
-                                      
-                                      //Method Name
-                                      var MethodName = "RelWiz - Run AML";
-                              </script>
-                              <script type="text/javascript">
-                              
-                                      function loadDefaults()
-                                      {
-                                              //Get information passed from item
-                                              THIS = dialogArguments.item;
-                                              inn = dialogArguments.innovator;
-                                              top.aras = dialogArguments.aras;
-                                              
-                                              if (dialogArguments.item.getAttribute("type"))
-                                              {
-                                                      document.all.Itemtype.value = dialogArguments.item.getAttribute("type");
-                                                      document.all.selectItemtype.disabled = true;
-                                                      queryRelationshiptypes(document.all.Itemtype.value);
-                                              }
-                                              
-                                              if (dialogArguments.itemKeyedName)
-                                              {
-                                                      document.all.Item.value = dialogArguments.itemKeyedName;
-                                                      document.all.selectItem.disabled = true;
-                                              }
-                                              if (dialogArguments.itemID)
-                                              {
-                                                      itemID = dialogArguments.itemID;
-                                              }
-                                              
-                                              //Hide relationship type column
-                                              SetColumnVisible(RelationshipType[0], false, 0);
-                                      }
-                                                      
-                                      function setItem() 
-                                      {       
-                                              if (!document.all.Itemtype.value)
-                                              {
-                                                      return;
-                                              }
-                                              var Item = openItemBrowser(document.all.Itemtype.value);
-                                              if(Item)
-                                              {
-                                                      itemID = Item;
-                                                      var keyed_name = top.aras.getKeyedNameEx(Item);
-                                                      document.all.Item.value = keyed_name;
-                                              }
-                                      }
-                                      
-                                      function setItemtype() 
-                                      {
-                                              var Item = openItemBrowser("itemtype");
-                                              
-                                              if(Item)
-                                              {
-                                                      var keyed_name = top.aras.getKeyedNameEx(Item);
-                                                      document.all.Itemtype.value = keyed_name;
-                                                      //Clear item instance
-                                                      document.all.Item.value = "";
-                                              }
-                                              queryRelationshiptypes(Item);
-                                      }
-                                      
-                                      function openItemBrowser(findType)
-                                      {
-                                              var param = {
-                                                      aras: window.top.aras,
-                                                      itemtypeName: findType,
-                                                      multiselect: false
-                                              };
-                                              
-                                              var res = showModalDialog(top.aras.getScriptsURL() + 'searchDialog.html', param, 'dialogHeight:450px; dialogWidth:950px; status:0; help:0; resizable:1');
-                                              if (res == undefined) return;
-                                              
-                                              searchedItem = res.item;
-                                              if (!searchedItem)
-                                              {
-                                                      return;
-                                              }
-                                              //var keyed_name = top.aras.getKeyedNameEx(searchedItem);
-                                              return searchedItem;
-                                      }
-                                      
-                                      function openItemBrowserChooser(findType) 
-                                      {
-                                              var param = {
-                                                      aras: window.top.aras,
-                                                      itemtypeName: findType,
-                                                      multiselect: true
-                                              };
-                                              
-                                              var res = showModalDialog(top.aras.getScriptsURL() + 'searchDialog.html', param, 'dialogHeight:450px; dialogWidth:950px; status:0; help:0; resizable:1');
-                                              if (res == undefined) return;
-                                              if (res.length < 1)
-                                              {
-                                                      return;
-                                              }
-                                              
-                                              var resCopied = new Array();
-                                              for (var i = 0; i < res.length; i++) resCopied.push(res[i]);
-                                              
-                                              return  "'" + resCopied.join("','") + "'";
-                                      }
-                                      
-                                      function chooseButton() 
-                                      {
-                                              //Get Value
-                                              var e = document.getElementById("RelationshipList2");
-                                              var strItem = e.options[e.selectedIndex].value;
-                                              var strRelationship = e.options[e.selectedIndex].text;
-                                              
-                                              //Choose Items
-                                              var Items = openItemBrowserChooser(strItem);
-                                              if (!Items) return; 
-                                              
-                                              var Result = RunQuery(strItem, Items);
-                                              if (Result.isError())
-                                              {
-                                                      alert(Result.getErrorDetail() + ':  Unable to run query');
-                                                      return;
-                                              }
-                                              
-                                              //Add to Grid
-                                              addItemsToGrid(Result, strRelationship);
-                                      }
-                                      
-                                      function RunQuery(strItem, Items) 
-                                      {       
-                                              //AML to get items using condition IN
-                                              var qry = inn.newItem();
-                                              var amlQuery = '<AML>' +
-                                                      '<Item type=\"' + strItem + '\" action=\"get\" select=\"keyed_name, locked_by_id, state, major_rev, generation\">' +
-                                                              '<id condition=\"IN\">' + Items + '</id>' +
-                                                      '</Item>' +
-                                              '</AML>';
-                                              
-                                              qry.loadAML(amlQuery);
-                                              return qry.apply();
-                                      }
-                                                              
-                                      function CreateRelations() 
-                                      {
-                                              
-                                              grid = document.MyGrid;
-                                              var ids = grid.getAllItemIds("|");
-                                              var id_array = ids.split("|");
-                                              
-                                              if (id_array.length == 0)
-                                              {
-                                                      return;
-                                              }
+     <Item type="Field" id="0386C3CB39154EFD90F95B6CFF689460" action="add">
+      <border_width>0</border_width>
+      <field_type>html</field_type>
+      <font_color>#000000</font_color>
+      <font_family>arial, helvetica, sans-serif</font_family>
+      <font_size>8pt</font_size>
+      <font_weight>bold</font_weight>
+      <html_code><![CDATA[<!DOCTYPE html>
+<html>
+<head>
+    <link href="../styles/default.css" rel="stylesheet">
+    <meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+	<script type="text/javascript">
+        //debugger;
+        //Global variables
+        var inn;
+        var THIS;
+        var itemID;
+        var myGridControl = null;
 
-                                              for (var x = 0 ; x < id_array.length; x++) 
-                                              {
-                                                      rowId = id_array[x];
-                                                      //Clear Cell
-                                                      UpdateResult(rowId, ResultHeader[0], "");
-                                              }                               
+        //Column Index and Name
+        var LockStatus = ["0", " "];
+        var ItemType = ["1", "Item Type"];
+        var ItemName = ["2", "Item Name"];
+        var Revision = ["3", "Revision"];
+        var Gen = ["4", "Gen"];
+        var State = ["5", "State"];
+        var ResultHeader = ["6", "Result"];
+        var RelationshipType = ["7", "RelationshipType"];
 
-                                              for (var x = 0 ; x < id_array.length; x++) 
-                                              {                                       
-                                                      rowId = id_array[x];
-                                                      if (rowId !="") 
-                                                      {
-                                                              try
-                                                              {
-                                                                      //Check Duplicate
-                                                                      if (document.getElementById("PreventDuplicate").checked)
-                                                                      {
-                                                                              var PreventDuplicateQry = inn.newItem();
-                                                                              var PreventDuplicateAmlQuery = '<AML>' +
-                                                                                                                      '<Item type=\"' + grid.cells(rowId,RelationshipType[0]).getValue() + '\" action=\"get\" select=\"related_id, source_id\">>' +
-                                                                                                                              '<related_id>' + itemID + '</related_id>' +
-                                                                                                                              '<source_id>' + rowId  + '</source_id>' +
-                                                                                                                      '</Item>' +
-                                                                                                              '</AML>';
-                                                                              
-                                                                              PreventDuplicateQry.loadAML(PreventDuplicateAmlQuery);                                          
-                                                                              var PreventDuplicateResult = PreventDuplicateQry.apply();
-                                                                              if (PreventDuplicateResult.isError())
-                                                                              {
-                                                                                      debugger;
-                                                                                      //Need to catch case when no relationships exist and ignore.
-                                                                                      if (PreventDuplicateResult.getErrorString().indexOf("No items of type") < 0)
-                                                                                      {
-                                                                                              UpdateResult(rowId, ResultHeader[0], PreventDuplicateResult.getErrorString());
-                                                                                              continue;
-                                                                                      }
-                                                                              }
-                                                                              
-                                                                              var string = "//Result/Item[@type='" + grid.cells(rowId,RelationshipType[0]).getValue() + "']";
-                                                                              var PreventDuplicateItems = PreventDuplicateResult.getItemsByXPath(string);
-                                                                              if (PreventDuplicateItems.getItemCount() > 0)
-                                                                              {
-                                                                                      UpdateResult(rowId, ResultHeader[0], "Error: Relationship Already Exists");
-                                                                                      continue;
-                                                                              }                                                               
-                                                                      }
+        //Method Name
+        var MethodName = "RelWiz - Run AML";
 
-                                                                      var version = (document.getElementById("VersionItem").checked) ? "1" : "0";
-                                                                      
-                                                                      //Create AML for Relationship 
-                                                                      var qry = inn.newItem();
-                                                                      var amlQuery = '<AML>' +
-                                                                                                              '<Item type=\"' + grid.cells(rowId,ItemType[0]).getValue() + '\" action=\"edit\" id=\"' + rowId + '\" version=\"' + version + '\">' +
-                                                                                                                      '<Relationships>' +
-                                                                                                                              '<Item type=\"' + grid.cells(rowId,RelationshipType[0]).getValue() + '\" action=\"add\">' +
-                                                                                                                                      '<related_id>' + itemID  + '</related_id>' +
-                                                                                                                              '</Item>' +
-                                                                                                                      '</Relationships>' +
-                                                                                                              '</Item>' +
-                                                                                                      '</AML>';
-                                                                                                                              
-                                                                      //Run the query on the server so can run as Aras PLM if required.
-                                                                      var param = "<AMLquery><![CDATA[" + amlQuery + "]]]]>
-              <![CDATA[></AMLquery>";
-                                                                      param += "<ArasPLM>" + document.getElementById("ArasPLM").checked + "</ArasPLM>";
-                                                                      param += "<user_id>" + top.aras.getUserID() + "</user_id>";
-                                                                      var Result = top.aras.applyMethod(MethodName,param);
-                                                                      
-                                                                      var d = top.aras.createXMLDocument();
-                                                                      d.loadXML(Result);
-                                                                      var nd = d.selectSingleNode("./Result");
-                                                                      
-                                                                      UpdateResult(rowId, ResultHeader[0], nd.text);                                                  
-                                                              }
-                                                              catch (e)
-                                                              {
-                                                                      //alert("Error: " + e.message);
-                                                                      UpdateResult(rowId, ResultHeader[0], e.message);
-                                                                      continue;
-                                                              }
-                                                              finally
-                                                              {
-                                                              }
-                                                      }
-                                              }
-                                              
-                                              if (document.getElementById("RefreshGrid").checked == true)
-                                              {
-                                                      RefreshGrid();
-                                              }
-                                              
-                                      }
-                                      
-                                      function queryRelationshiptypes(relationship) 
-                                      {
-                                              var qry = inn.newItem();
-                                              var amlQuery = '<AML>' +
-                                                      '<Item type=\"RelationshipType\" action=\"get\" select=\"source_id, related_id, name, label\">' +
-                                                              '<source_id>' +
-                                                                      '<Item type=\"ItemType\" action=\"get\"></Item>' +
-                                                              '</source_id>' +
-                                                              '<related_id>' +
-                                                                      '<Item type=\"ItemType\" action=\"get\">' +
-                                                                              '<name>' + relationship + '</name>' +
-                                                                      '</Item>' +
-                                                              '</related_id>' +
-                                                      '</Item>' +
-                                              '</AML>';
-                                              
-                                              qry.loadAML(amlQuery);
-                                              var Result = qry.apply();
-                                              if (Result.isError())
-                                              {
-                                                      alert(Result.getErrorDetail() + ':  Unable to run query');
-                                                      return;
-                                              }
-                                              var Items = Result.getItemsByXPath("//Result/Item[@type='RelationshipType']");
-                                              //var Items = Result.getItemsByXPath("//Result/source_id");
-                                              
-                                              for (var i=0; i < Items.getItemCount(); i++) 
-                                              {
-                                                      var RelationshipTypeItem = Items.getItemByIndex(i);
-                                                      var SourceItem = RelationshipTypeItem.getPropertyItem("source_id");
-                                                      
-                                                      //select.options[i]= new Option(RelationshipTypeItem.getProperty("name"), RelationshipTypeItem.getProperty("id"));
-                                                      
-                                                      //http://chiragrdarji.wordpress.com/2007/06/06/add-items-in-drop-down-list-or-list-box-using-javascript/
-                                                      var opt = document.createElement("option");
-                      
-                                                      // Add an Option object to Drop Down/List Box
-                                                      document.getElementById("RelationshipList2").options.add(opt);
-                                                      // Assign text and value to Option object
-                                                      opt.text = RelationshipTypeItem.getProperty("name");
-                                                      opt.value = SourceItem.getItembyIndex(0).getProperty("name");   
-                                              }                       
-                                      }
+        function loadDefaults() {
+            //debugger;
+            //Get information passed from item
+            THIS = dialogArguments.item;
+            inn = dialogArguments.innovator;
+            top.aras = dialogArguments.aras;
 
-                              </script>
-                              <script type="text/javascript">
-                              
-                                      function setGridControlDefaults()
-                                      {
-                                              //Setup Grid
-                                              myGridControl = document.MyGrid;
-                                              myGridControl.Delimeter = "|";
-                                              myGridControl.DrawGrid = true;
-                                              myGridControl.noSort = false;
-                                              myGridControl.ColumnDraggable = false;
-                                              myGridControl.Editable = false;
-                                              myGridControl.Justify = true;
-                                              myGridControl.HeaderBGColor = "#d4d0c8";
-                                              myGridControl.setColumnCount(8);
-                                              myGridControl.setInitWidths("30|80|260|60|40|80|250|100");
-                                              myGridControl.setHorAligns("LEFT|CENTER|LEFT");
-                                              
-                                              myGridControl.SetHeaderCol(0, LockStatus[1]);
-                                              myGridControl.SetHeaderCol(1, ItemType[1]);
-                                              myGridControl.SetHeaderCol(2, ItemName[1]);
-                                              myGridControl.SetHeaderCol(3, Revision[1]);
-                                              myGridControl.SetHeaderCol(4, Gen[1]);
-                                              myGridControl.SetHeaderCol(5, State[1]);
-                                              myGridControl.SetHeaderCol(6, ResultHeader[1]);
-                                              myGridControl.SetHeaderCol(7, RelationshipType[1]);
+            if (dialogArguments.itemKeyedName) {
+                document.all.Item.value = dialogArguments.itemKeyedName;
+                //document.all.selectItem.disabled = true;
+            }
+            if (dialogArguments.itemID) {
+                itemID = dialogArguments.itemID;
+            }
 
-                                              myGridControl.SetColumnProperties('type=noedit', 0);
-                                              myGridControl.SetColumnProperties('type=noedit', 1);
-                                              myGridControl.SetColumnProperties('type=noedit', 2);
-                                              myGridControl.SetColumnProperties('type=noedit', 3);
-                                              myGridControl.SetColumnProperties('type=noedit', 4);
-                                              myGridControl.SetColumnProperties('type=noedit', 5);
-                                              myGridControl.SetColumnProperties('type=noedit', 6);
-                                              myGridControl.SetColumnProperties('type=noedit', 7);
-                                              
-                                               myGridControl.setMultiselect(true);
-                                              
-                                              //myGridControl.addRow("ThisRow1","<img src='../cbin/icons/locked.gif'>" + "|" + "Part" + "|" + "ABC123" + "|" + "01" + "|" + "Prelim" + "|"  + "<checkbox state=0>","ThisRow1");                                       
-                                              //myGridControl.addRow("ThisRow2","<img src='../cbin/icons/locked_else.gif'>" + "|" + "Part" + "|" + "ABC123" + "|" + "01" + "|" + "Released" + "|" + "OK","ThisRow2");                                 
-                                      }
-                                      
-                                      function clearGrid() 
-                                      {
-                                              grid = document.MyGrid;
-                                              grid.RemoveAllRows();
-                                      }
-                                      
-                                      function clearPassed()
-                                      {       
-                                              //Get all items
-                                              grid = document.MyGrid;
-                                              
-                                              var rowId, rowIds = grid.getAllItemIds(';').split(';');
-                                          if (rowIds.length == 0) return;
-                                          for (var i = 0; i < rowIds.length; i++)
-                                          {
-                                                      rowId = rowIds[i];
-                                                      
-                                                      if (grid.GetCellValue(rowId, ResultHeader[0]) == "Relationship Created")
-                                                      {
-                                                              DeleteRow(rowId);
-                                                      }
-                                              }                       
-                                      }
-                                      
-                                      function DeleteRow(rowId)
-                                      {
-                                              this.grid.deleteRow(rowId);
-                                      }
-                                      
-                                      function addItemsToGrid(Result, strRelationship) 
-                                      {
-                                              addItemsToGrid(Result, strRelationship, "");
-                                      }
-                                      
-                                      function addItemsToGrid(Result, strRelationship, InsertIndex) 
-                                      {
-                                              var Items = Result.getItemsByXPath("//Result/Item");
-                                              
-                                              for (var i=0; i < Items.getItemCount(); i++) 
-                                              {
-                                                      var Item = Items.getItemByIndex(i);
-                                                      var id = Item.getID();
-                                                      
-                                                      var lockstatus;
-                                                      switch (Item.getLockStatus())
-                                                      {
-                                                              case 0: //not locked
-                                                                      lockstatus = "<img src=''>";
-                                                              break;                                          
-                                                              case 1: //locked by user
-                                                                      lockstatus = "<img src='../cbin/icons/locked.gif'>";
-                                                              break;                                          
-                                                              case 2: //locked by other
-                                                                      lockstatus = "<img src='../cbin/icons/locked_else.gif'>";
-                                                              break;
-                                                              default:
-                                                                      lockstatus = "<img src=''>";
-                                                      }
-                                                      
-                                                      if (this.grid.IsItemExists(id))
-                                                      {
-                                                              alert("Item already exists in grid");
-                                                              continue;
-                                                      }
-                                                      
-                                                      var rowData = lockstatus + "|" + Item.getAttribute("type") + "|" + Item.getProperty("keyed_name") + "|" + Item.getProperty("major_rev")  + "|" + Item.getProperty("generation")  + "|" + Item.getProperty("state") + "|" + "" + "|" + strRelationship;
-                                                      //Add to grid
-                                                      if (InsertIndex == "")
-                                                      {
-                                                              this.grid.addRow(id, rowData, id);
-                                                      }
-                                                      else
-                                                      {
-                                                              this.grid.InsertRowAt(InsertIndex, id, rowData, id);
-                                                      }
-                                                      
-                                                      setLink(id,Item.getAttribute("type"),id, ItemName[0]);
-                                              }
-                                      }
-                                      
-                                      function UpdateResult(rowId, colIndex, value) 
-                                      {
-                                              grid = document.MyGrid;
-                                              grid.setCellValue(rowId, colIndex, value);
-                                      }
-                                      
-                                      function setLink(row_id, row_type, item_id, col) 
-                                      {
-                                              grid = document.MyGrid;
-                                              grid.SetCellTextColor(row_id, col, "#0000FF");
-                                              grid.SetCellLink(row_id, col, "'" + row_type + "','" + item_id + "'");
-                                      }
-                                      
-                                      function RefreshGrid()
-                                      {
-                                              grid = document.MyGrid;
-                                              var ids = grid.getAllItemIds("|");
-                                              var id_array = ids.split("|");
-                                              
-                                              if (id_array.length == 0)
-                                              {
-                                                      return;
-                                              }
-                              
-                                              for (var x = 0 ; x < id_array.length; x++) 
-                                              {
-                                                      //Get Item Id
-                                                      var rowId = id_array[x];
-                                                      
-                                                      //Get Row Index
-                                                      var rowIndex = grid.GetRowIndex(rowId);         
-                                                      
-                                                      //Get Gen
-                                                      var currentGen = grid.cells(rowId,Gen[0]).getValue();
-                                                      
-                                                      //Get Result
-                                                      var res = grid.cells(rowId,ResultHeader[0]).getValue();
-                                                      //var res = currentRes;                 
-                                                      
-                                                      //Get ItemType
-                                                      var itemType = grid.cells(rowId,ItemType[0]).getValue();
-                                                      
-                                                      //Get RelationshipType
-                                                      var relationshipType = grid.cells(rowId,RelationshipType[0]).getValue();
-                                                      
-                                                      var qry = inn.newItem();
-                                                      var amlQuery = '<AML>' +
-                                                              '<Item type=\"' + itemType + '\" id=\"' + rowId + '\" action=\"getItemLastVersion\"></Item>' +
-                                                      '</AML>';
-                                                      
-                                                      qry.loadAML(amlQuery);
-                                                      var Result = qry.apply();
-                                                      
-                                                      if (Result.isError())
-                                                      {
-                                                              if (Result.getErrorCode() == "SOAP-ENV:Server.ItemTypeNotVersionableException")
-                                                              {
-                                                                      continue;
-                                                              }
-                                                      }
-                                                      
-                                                      var Items = Result.getItemsByXPath("//Result/Item");
-                                                      if (Items.getItemCount() != 1)
-                                                      {
-                                                              alert("Error: Unable to refresh grid");
-                                                              return;
-                                                      }
-                                                      
-                                                      //if returned gen greater than current
-                                                      if (Items.getItemByIndex(0).getProperty("generation") > currentGen)
-                                                      {
-                                                              var newID = Items.getItemByIndex(0).getID();
-                                                              DeleteRow(rowId);
-                                                              addItemsToGrid(Result, relationshipType, rowIndex);
-                                                              UpdateResult(newID, ResultHeader[0], res);
-                                                      }
-                                              }
-                                      }
-                                      
-                                      function RemoveItemsFromGrid() 
-                                      {
-                                              grid = document.MyGrid;
-                                              var rowId, rowIds = grid.getSelectedItemIds(';').split(';');
-                                          if (rowIds.length == 0) return;
-                                          for (var i = 0; i < rowIds.length; i++)
-                                          {
-                                                      rowId = rowIds[i];
-                                                      grid.deleteRow(rowId);
-                                              }
-                                      }
-                                      
-                                      function setItemVisability(enabled)
-                                      {
-                                              if (enabled == 1)
-                                              {
-                                                      document.all.selectItem.disabled = false;
-                                                      return;
-                                              }
-                                              else
-                                              {
-                                                      document.all.selectItem.disabled = true;
-                                                      return;
-                                              }
-                                      }
-                                      
-                                      function SetColumnVisible(col, visible, col_width)
-                                      {
-                                              grid = document.MyGrid;
-                                              grid.SetColumnVisible(col, visible, col_width);
-                                      }
-                                      
-                              </script>
-                              <script type="text/javascript" for="MyGrid" event="GridStart(isSuccess)">
-                                      setGridControlDefaults();
-                              </script>
-                              <script type="text/javascript" for="MyGrid" event="GridClick(rowId, col)">
-                              </script>
-                              <script type="text/javascript" for="MyGrid" event="GridDoubleClick(rowId)">
-                              </script>
-                              <script type="text/javascript" for="MyGrid" event="GridEditCell(mode, rowID, col)">
-                              </script>
-                              <script type="text/javascript" for="MyGrid" event="GridLinkClick(strLink)">
-                                      setTimeout("top.aras.uiShowItem(" + strLink + ", 'tab view', true);", 10);
-                              </script>
-                              <style>
-                                      .textbox
-                                      {
-                                              width: 200px;
-                                      }
-                                      select
-                                      {
-                                              width: 205px;
-                                      }
-                                      .gridButton
-                                      {
-                                              width: 160px;
-                                      }
-                                      .button
-                                      {
-                                              width: 110px;
-                                      }
-                                      .createbutton
-                                      {
-                                              width: 140px;
-                                      }
-                                      table
-                                      {
-                                              border-collapse: collapse;
-                                      }
-                                      fieldset 
-                                      {
-                                              vertical-align:middle;
-                                      }
-                                      fieldset.Select
-                                      {
-                                              width:70%;
-                                              margin-bottom: auto;
-                                              margin-right: 20px;
-                                              float: left;
-                                              min-height: 110px; 
-                                      }
-                                      fieldset.Options
-                                      {
-                                              margin-top: 20px;
-                                              margin-bottom: auto;
-                                              min-height: 110px;
-                                              text-align: right;
-                                      }
-                                      fieldset.Config
-                                      {
-                                              margin: auto;
-                                              min-height: 135px;
-                                              text-align: right;
-                                      }
-                                      fieldset.CreateRelationship
-                                      {
-                                              min-height: 130px;
-                                              text-align: right;
-                                              position: relative;
-                                              border:0;  
-                                      }
-                                      LEGEND
-                                      {
-                                              padding: 5px;
-                                              text-align: left;
-                                      }
-                              </style>
-                      </head>
-                  <body onload="loadDefaults();">
-                              <div>
-                                      <fieldset class="Select">
-                                              <legend>Item Configuration</legend>
-                                              <div>
-                                                      <table>
-                                                              <tr>
-                                                                      <td>
-                                                                              ItemType:
-                                                                      </td>
-                                                                      <td>
-                                                                              <input class="textbox" type="text" name="Itemtype" readonly="readonly" title="ItemType (Related)">
-                                                                      </td>
-                                                                      <td>
-                                                                              <input class="button" id="selectItemtype" name="selectItemtype" type="button" value="Itemtype" onclick="setItemtype()" title="Click to choose ItemType (Related)">
-                                                                      </td>
-                                                              </tr>
-                                                              <tr>
-                                                                      <td>
-                                                                              Item Name:
-                                                                      </td>
-                                                                      <td>
-                                                                              <input class="textbox" type="text" name="Item" readonly="readonly" title="Keyed name of the item">
-                                                                      </td>
-                                                                      <td>
-                                                                              <input class="button" id="selectItem" name="selectItem" type="button" value="Item" onclick="setItem()" title="Click to select the item instance to create the reverse relationship(s)">
-                                                                      </td>
-                                                              </tr>
-                                                              <tr>
-                                                                      <td>
-                                                                              Choose Relationship:
-                                                                      </td>
-                                                                      <td>
-                                                                              <select id="RelationshipList2" name="RelationshipList2" title="Available Relationships"></select>
-                                                                      </td>
-                                                                      <td>
-                                                                              <input class="button" id="chooseItems" name="chooseItems" type="button" value="Choose Items" onclick="chooseButton()" title="Choose Parent Items to create reverse relationship">
-                                                                      </td>
-                                                              </tr>
-                                                      </table>
-                                              </div>
-                                      </fieldset>
-                                      <fieldset class="Options">
-                                              <legend>Configuration</legend>
-                                              <div>
-                                                      <div>
-                                                              Aras PLM:
-                                                              <input type="checkbox" id="ArasPLM" name="ArasPLM" checked title="When creating the relationship apply as the Aras PLM identity">
-                                                      </div>
-                                                      <div>
-                                                              Version Item:
-                                                              <input type="checkbox" id="VersionItem" name="VersionItem" title="When checked set 'version = 1' when creating relationship. When unchecked set 'version=0'">
-                                                      </div>
-                                                      <div>
-                                                              Prevent Duplicate:
-                                                              <input type="checkbox" id="PreventDuplicate" name="PreventDuplicate" checked title="When checked do not recreate the relationship if it already exists">
-                                                      </div>
-                                                      <div>
-                                                              Refresh after Create:
-                                                              <input type="checkbox" id="RefreshGrid" name="RefreshGrid" checked title="Refresh the grid after the reverse relationship is created (Create Relationship button)">
-                                                      </div>
-                                              </div>
-                                      </fieldset>
+            //Hide relationship type column
+            SetColumnVisible(RelationshipType[0], false, 0);
 
-                                      <fieldset class="Config">
-                                              <legend>Grid</legend>
-                                              <div>
-                                                      <div>
-                                                              <input class="gridButton" id="ClearGrid" name="ClearGrid" type="button" value="Clear Grid" onclick="clearGrid()" title="Clear the entire grid">
-                                                      </div>
-                                                      <div>
-                                                              <input class="gridButton" id="DeleteSelected" name="DeleteSelected" type="button" value="Remove Selected Rows" onclick="RemoveItemsFromGrid()" title="Remove the selected row(s) from the grid">
-                                                      </div>
-                                                      <div>
-                                                              <input class="gridButton" id="ClearPassed" name="ClearPassed" type="button" value="Remove Successfully Created" onclick="clearPassed()" title="Remove successfully created row(s) from the grid">
-                                                      </div>
-                                                      <br></br>
-                                                      <div>
-                                                              <input class="gridButton" id="CreateRelationship" name="CreateRelationship" type="button" value="Create Relationship" onclick="CreateRelations()" title="Create the reverse relationship">
-                                                      </div>
-                                              </div>
-                                      </fieldset>
-                              </div>
-                              <br><br>
-                              <object id="MyGrid" style="width:800px; height:250px;" classid="../cbin/TreeTable.dll#Aras.Client.Controls.GridContainer"></object>
-                      </body>
-              </html>]]>
-              </html_code>
-            <is_disabled>0</is_disabled>
-            <is_visible>1</is_visible>
-            <label_position>top</label_position>
-            <list_no_blank>0</list_no_blank>
-            <name>html</name>
-            <sort_order>128</sort_order>
-            <source_id keyed_name="4CFC7EF41AD34B60A439D95FFCB555CB" type="Body">4CFC7EF41AD34B60A439D95FFCB555CB</source_id>
-            <tab_stop>1</tab_stop>
-            <x>6</x>
-            <y>0</y>
-          </Item>
-        </Relationships>
-        <sort_order>128</sort_order>
-        <source_id keyed_name="Relationship Wizard" type="Form">7208ADB24A614FACBBEC24A0DBCB5FEB</source_id>
-      </Item>
+            if (dialogArguments.item.getAttribute("type")) {
+                document.all.Itemtype.value = dialogArguments.item.getAttribute("type");
+                //document.all.selectItemtype.disabled = true;
+                queryRelationshiptypes(document.all.Itemtype.value);
+            }
+        }
+
+        function setItem() {
+
+            //debugger;
+            if (!document.all.Itemtype.value) {
+                return;
+            }
+            var Item = ItemBrowser(document.all.Itemtype.value, false);
+            if (Item) {
+                itemID = Item;
+                var keyed_name = top.aras.getKeyedNameEx(Item);
+                document.all.Item.value = keyed_name;
+            }
+        }
+
+        function setItemtype() {
+            //debugger;
+            var Item = ItemBrowser("ItemType", false);
+
+            if (Item) {
+                var keyed_name = top.aras.getKeyedNameEx(Item);
+                document.all.Itemtype.value = keyed_name;
+                //Clear item instance
+                document.all.Item.value = "";
+	
+				queryRelationshiptypes(Item);
+            }
+        }
+		
+		function ItemBrowser(findType, multiselect) {
+		
+            //debugger;
+			var itemtypeID = top.aras.getItemTypeId(findType);
+			
+            var param = {
+                aras: top.aras,
+                itemtypeID: itemtypeID,
+                sourceItemTypeName: 'Document',
+                multiselect: multiselect
+            };
+
+            var options = { dialogHeight: 450, dialogWidth: 950, status: 0, help: 0, resizable: 1 };
+            var res = top.aras.modalDialogHelper.show("DefaultModal", window, param, options, "searchDialog.html");
+            //var res = top.aras.modalDialogHelper.show('SearchDialog', top, param);
+
+			if (res == undefined) return;
+			
+			if (multiselect)
+			{
+				if (res.length < 1) {
+					return;
+				}
+
+				var resCopied = new Array();
+				for (var i = 0; i < res.length; i++) resCopied.push(res[i]);
+				//debugger;
+				return "'" + resCopied.join("','") + "'";
+			}
+			else
+			{
+				searchedItem = res.item;
+				if (!searchedItem) {
+					return;
+				}
+				return searchedItem;
+			}
+		
+		}
+
+        //function openItemBrowserChooser(findType) {
+        //    //debugger;
+        //    var param = {
+        //        aras: top.aras,
+        //        itemtypeName: findType,
+        //        multiselect: true
+        //    };
+        //
+        //    var options = { dialogHeight: 450, dialogWidth: 950, status: 0, help: 0, resizable: 1 };
+        //
+		//	//var res1 = top.aras.modalDialogHelper.show('SearchDialog', top, param);
+        //    var res = top.aras.modalDialogHelper.show("DefaultModal", top, param, options, "searchDialog.html");
+        //    
+        //    if (res == undefined) return;
+        //    if (res.length < 1) {
+        //        return;
+        //    }
+        //
+        //    var resCopied = new Array();
+        //    for (var i = 0; i < res.length; i++) resCopied.push(res[i]);
+        //    //debugger;
+        //    return "'" + resCopied.join("','") + "'";
+        //}
+        //
+        //function openItemBrowser(findType) {
+        //    //debugger;
+        //    var param = {
+        //        aras: top.aras,
+        //        itemtypeName: findType,
+        //        multiselect: false
+        //    };
+        //
+        //    var options = { dialogHeight: 450, dialogWidth: 950, status: 0, help: 0, resizable: 1 };
+        //    var res = top.aras.modalDialogHelper.show("DefaultModal", window.parent, param, options, "searchDialog.html");
+        //    //var res = top.aras.modalDialogHelper.show('SearchDialog', top, param);
+        //    if (res == undefined) return;
+        //
+        //    searchedItem = res.item;
+        //    if (!searchedItem) {
+        //        return;
+        //    }
+        //    //var keyed_name = top.aras.getKeyedNameEx(searchedItem);
+        //    return searchedItem;
+        //}
+
+        function chooseButton() {
+            //Get Value
+            var e = document.getElementById("RelationshipList2");
+            var strItem = e.options[e.selectedIndex].value;
+            var strRelationship = e.options[e.selectedIndex].text;
+
+            //Choose Items
+            //var Items = openItemBrowserChooser(strItem);
+            var Items = ItemBrowser(strItem, true);
+            //var Items = SearchPart();
+            if (!Items) return;
+
+            var Result = RunQuery(strItem, Items);
+            if (Result.isError()) {
+                alert(Result.getErrorDetail() + ':  Unable to run query');
+                return;
+            }
+
+            //Add to Grid
+            addItemsToGrid(Result, strRelationship);
+        }
+
+        function RunQuery(strItem, Items) {
+            //AML to get items using condition IN
+            var qry = inn.newItem();
+            var amlQuery = '<AML>' +
+                '<Item type=\"' + strItem + '\" action=\"get\" select=\"keyed_name, locked_by_id, state, major_rev, generation\">' +
+                    '<id condition=\"IN\">' + Items + '</id>' +
+                '</Item>' +
+            '</AML>';
+
+            qry.loadAML(amlQuery);
+            return qry.apply();
+        }
+
+        function CreateRelations() {
+            debugger;
+            grid = myGridControl;
+            var ids = grid.getAllItemIds("|");
+            var id_array = ids.split("|");
+
+            if (id_array.length == 0) {
+                return;
+            }
+
+            for (var x = 0 ; x < id_array.length; x++) {
+                rowId = id_array[x];
+                //Clear Cell
+                UpdateResult(rowId, ResultHeader[0], "");
+            }
+
+            for (var x = 0 ; x < id_array.length; x++) {
+                rowId = id_array[x];
+                if (rowId != "") {
+                    try {
+                        //Check Duplicate
+                        if (document.getElementById("PreventDuplicate").checked) {
+                            var PreventDuplicateQry = inn.newItem();
+                            var PreventDuplicateAmlQuery = '<AML>' +
+                                                '<Item type=\"' + grid.cells(rowId, RelationshipType[0]).getValue() + '\" action=\"get\" select=\"related_id, source_id\">>' +
+                                                    '<related_id>' + itemID + '</related_id>' +
+                                                    '<source_id>' + rowId + '</source_id>' +
+                                                '</Item>' +
+                                            '</AML>';
+
+                            PreventDuplicateQry.loadAML(PreventDuplicateAmlQuery);
+                            var PreventDuplicateResult = PreventDuplicateQry.apply();
+                            if (PreventDuplicateResult.isError()) {
+                                //debugger;
+                                //Need to catch case when no relationships exist and ignore.
+                                if (PreventDuplicateResult.getErrorString().indexOf("No items of type") < 0) {
+                                    UpdateResult(rowId, ResultHeader[0], PreventDuplicateResult.getErrorString());
+                                    continue;
+                                }
+                            }
+
+                            var string = "//Result/Item[@type='" + grid.cells(rowId, RelationshipType[0]).getValue() + "']";
+                            var PreventDuplicateItems = PreventDuplicateResult.getItemsByXPath(string);
+                            if (PreventDuplicateItems.getItemCount() > 0) {
+                                UpdateResult(rowId, ResultHeader[0], "Error: Relationship Already Exists");
+                                continue;
+                            }
+                        }
+
+                        var version = (document.getElementById("VersionItem").checked) ? "1" : "0";
+
+                        //Create AML for Relationship
+                        var qry = inn.newItem();
+                        var amlQuery = '<AML>' +
+                                            '<Item type=\"' + grid.cells(rowId, ItemType[0]).getValue() + '\" action=\"edit\" id=\"' + rowId + '\" version=\"' + version + '\">' +
+                                                '<Relationships>' +
+                                                    '<Item type=\"' + grid.cells(rowId, RelationshipType[0]).getValue() + '\" action=\"add\">' +
+                                                        '<related_id>' + itemID + '</related_id>' +
+                                                    '</Item>' +
+                                                '</Relationships>' +
+                                            '</Item>' +
+                                        '</AML>';
+
+                        //Run the query on the server so can run as Aras PLM if required.
+                        var param = "<AMLquery><![CDATA[" + amlQuery + "]]]]><![CDATA[></AMLquery>";
+                        param += "<ArasPLM>" + document.getElementById("ArasPLM").checked + "</ArasPLM>";
+                        param += "<user_id>" + top.aras.getUserID() + "</user_id>";
+                        var Result = top.aras.applyMethod(MethodName, param);
+
+                        var d = top.aras.createXMLDocument();
+                        d.loadXML(Result);
+                        var nd = d.selectSingleNode("./Result");
+
+                        UpdateResult(rowId, ResultHeader[0], nd.text);
+                    }
+                    catch (e) {
+                        //alert("Error: " + e.message);
+                        UpdateResult(rowId, ResultHeader[0], e.message);
+                        continue;
+                    }
+                    finally {
+                    }
+                }
+            }
+
+            if (document.getElementById("RefreshGrid").checked == true) {
+                RefreshGrid();
+            }
+
+        }
+
+        function queryRelationshiptypes(relationship) {
+            var qry = inn.newItem();
+            var amlQuery = '<AML>' +
+                '<Item type=\"RelationshipType\" action=\"get\" select=\"source_id, related_id, name, label\">' +
+                    '<source_id>' +
+                        '<Item type=\"ItemType\" action=\"get\"></Item>' +
+                    '</source_id>' +
+                    '<related_id>' +
+                        '<Item type=\"ItemType\" action=\"get\">' +
+                            '<name>' + relationship + '</name>' +
+                        '</Item>' +
+                    '</related_id>' +
+                '</Item>' +
+            '</AML>';
+
+            qry.loadAML(amlQuery);
+            var Result = qry.apply();
+            if (Result.isError()) {
+                alert(Result.getErrorDetail() + ':  Unable to run query');
+                return;
+            }
+            var Items = Result.getItemsByXPath("//Result/Item[@type='RelationshipType']");
+            //var Items = Result.getItemsByXPath("//Result/source_id");
+
+            for (var i = 0; i < Items.getItemCount() ; i++) {
+                var RelationshipTypeItem = Items.getItemByIndex(i);
+                var SourceItem = RelationshipTypeItem.getPropertyAttribute("source_id", "keyed_name");
+
+                //select.options[i]= new Option(RelationshipTypeItem.getProperty("name"), RelationshipTypeItem.getProperty("id"));
+
+                //http://chiragrdarji.wordpress.com/2007/06/06/add-items-in-drop-down-list-or-list-box-using-javascript/
+                var opt = document.createElement("option");
+
+                // Add an Option object to Drop Down/List Box
+                document.getElementById("RelationshipList2").options.add(opt);
+                // Assign text and value to Option object
+                opt.text = RelationshipTypeItem.getProperty("name");
+                opt.value = SourceItem;
+            }
+        }
+
+        var gridXml = '' +
+                '<table delim=\'|\' >' +
+                    ' <thead>' +
+                        ' <th align="c">' + LockStatus[1] + '</th>' +
+                        ' <th align="c">' + ItemType[1] + '</th>' +
+                        ' <th align="c">' + ItemName[1] + '</th>' +
+                        ' <th align="c">' + Revision[1] + '</th>' +
+                        ' <th align="c">' + Gen[1] + '</th>' +
+                        ' <th align="c">' + State[1] + '</th>' +
+                        ' <th align="c">' + ResultHeader[1] + '</th>' +
+                        ' <th align="c">' + RelationshipType[1] + '</th>' +
+                    ' </thead>' +
+                    ' <columns>' +
+                        ' <column width="30" order="0" align="c" />' +
+                        ' <column width="110" order="1" />' +
+                        ' <column width="160" order="2" />' +
+                        ' <column width="80" order="3" align="c" />' +
+                        ' <column width="60" order="4" align="c" />' +
+                        ' <column width="100" order="5" align="c" />' +
+                        ' <column width="200" order="6" />' +
+                        ' <column width="130" order="7" />' +
+                    ' </columns>' +
+                '</table>';
+
+        var args = {
+            connectId: "MyGrid"
+        };
+
+        eventHandlers = {
+            "gridLinkClick": function (strLink) {
+                setTimeout("top.aras.uiShowItem(" + strLink + ", 'tab view', true);", 10);
+            }
+        };
+
+        callback = function (control) {
+			//debugger;
+            //Setup Grid
+            myGridControl = control;
+            clientControlsFactory.on(myGridControl, eventHandlers);
+
+            myGridControl.InitXML(gridXml);
+
+            myGridControl.Delimeter = "|";
+            myGridControl.DrawGrid = true;
+            myGridControl.noSort = false;
+            myGridControl.ColumnDraggable = false;
+            myGridControl.Editable = false;
+            myGridControl.Justify = true;
+            myGridControl.HeaderBGColor = "#d4d0c8";
+            myGridControl.setColumnCount(8);
+            //myGridControl.setInitWidths("30|80|260|60|40|80|250|100");
+            //myGridControl.setHorAligns("LEFT|CENTER|LEFT");
+            myGridControl.setMultiselect(true);
+        };
+
+        clientControlsFactory.createControl("Aras.Client.Controls.Public.GridContainer", args, callback);
+		
+        function clearGrid() {
+            grid = myGridControl;
+            grid.removeAllRows();
+        }
+
+        function clearPassed() {
+            //Get all items
+            grid = myGridControl;
+
+            var rowId, rowIds = grid.getAllItemIds(';').split(';');
+            if (rowIds.length == 0) return;
+            for (var i = 0; i < rowIds.length; i++) {
+                rowId = rowIds[i];
+
+                if (grid.getCellValue(rowId, ResultHeader[0]) == "Relationship Created") {
+                    DeleteRow(rowId);
+                }
+            }
+        }
+
+        function DeleteRow(rowId) {
+            myGridControl.deleteRow(rowId);
+        }
+
+        function addItemsToGrid(Result, strRelationship) {
+            addItemsToGrid(Result, strRelationship, "");
+        }
+
+        function addItemsToGrid(Result, strRelationship, InsertIndex) {
+            var Items = Result.getItemsByXPath("//Result/Item");
+
+            for (var i = 0; i < Items.getItemCount() ; i++) {
+                var Item = Items.getItemByIndex(i);
+                var id = Item.getID();
+
+                var lockstatus = "";
+                switch (Item.getLockStatus()) {
+                    case 1: //locked by user
+                        lockstatus = "<img src='../images/LockedByMe.svg'/>";
+                        break;
+                    case 2: //locked by other
+                        lockstatus = "<img src='../images/LockedByOthers.svg'/>";
+                        break;
+                    default:
+                        lockstatus = "";
+                        break;
+                }
+
+                //debugger;
+                if (myGridControl.isItemExists(id))
+                {
+                	alert("Item already exists in grid");
+                	continue;
+                }
+
+                var rowData = lockstatus + "|" + Item.getAttribute("type") + "|" + Item.getProperty("keyed_name") + "|" + Item.getProperty("major_rev") + "|" + Item.getProperty("generation") + "|" + Item.getProperty("state") + "|" + "" + "|" + strRelationship;
+                //Add to grid
+                if (!InsertIndex) {
+                    myGridControl.addRow(id, rowData, id);
+                }
+                else {
+                    myGridControl.insertRowAt(InsertIndex, id, rowData, id);
+                }
+
+                setLink(id, Item.getAttribute("type"), id, ItemName[0]);
+            }
+        }
+
+        function UpdateResult(rowId, colIndex, value) {
+            grid = myGridControl;
+            grid.setCellValue(rowId, colIndex, value);
+        }
+
+        function setLink(row_id, row_type, item_id, col) {
+            grid = myGridControl;
+            grid.setCellTextColor(row_id, col, "#0000FF");
+            grid.setCellLink(row_id, col, "'" + row_type + "','" + item_id + "'");
+        }
+
+        function RefreshGrid() {
+            grid = myGridControl;
+            var ids = grid.getAllItemIds("|");
+            var id_array = ids.split("|");
+
+            if (id_array.length == 0) {
+                return;
+            }
+
+            for (var x = 0 ; x < id_array.length; x++) {
+                //Get Item Id
+                var rowId = id_array[x];
+
+                //Get Row Index
+                var rowIndex = grid.getRowIndex(rowId);
+
+                //Get Gen
+                var currentGen = grid.cells(rowId, Gen[0]).getValue();
+
+                //Get Result
+                var res = grid.cells(rowId, ResultHeader[0]).getValue();
+                //var res = currentRes;
+
+                //Get ItemType
+                var itemType = grid.cells(rowId, ItemType[0]).getValue();
+
+                //Get RelationshipType
+                var relationshipType = grid.cells(rowId, RelationshipType[0]).getValue();
+
+                var qry = inn.newItem();
+                var amlQuery = '<AML>' +
+                    '<Item type=\"' + itemType + '\" id=\"' + rowId + '\" action=\"getItemLastVersion\"></Item>' +
+                '</AML>';
+
+                qry.loadAML(amlQuery);
+                var Result = qry.apply();
+
+                if (Result.isError()) {
+                    if (Result.getErrorCode() == "SOAP-ENV:Server.ItemTypeNotVersionableException") {
+                        continue;
+                    }
+                }
+
+                var Items = Result.getItemsByXPath("//Result/Item");
+                if (Items.getItemCount() != 1) {
+                    alert("Error: Unable to refresh grid");
+                    return;
+                }
+
+                //if returned gen greater than current
+                if (Items.getItemByIndex(0).getProperty("generation") > currentGen) {
+                    var newID = Items.getItemByIndex(0).getID();
+                    DeleteRow(rowId);
+                    addItemsToGrid(Result, relationshipType, rowIndex);
+                    UpdateResult(newID, ResultHeader[0], res);
+                }
+            }
+        }
+
+        function RemoveItemsFromGrid() {
+            var rowId, rowIds = myGridControl.getSelectedItemIds(';').split(';');
+            if (rowIds.length == 0) return;
+            for (var i = 0; i < rowIds.length; i++) {
+                rowId = rowIds[i];
+                myGridControl.deleteRow(rowId);
+            }
+        }
+
+        function setItemVisability(enabled) {
+            if (enabled == 1) {
+                //document.all.selectItem.disabled = false;
+                return;
+            }
+            else {
+                //document.all.selectItem.disabled = true;
+                return;
+            }
+        }
+
+        function SetColumnVisible(col, visible, col_width) {
+            myGridControl.setColumnVisible(col, visible, col_width);
+        }
+
+    </script>
+    <style>
+        .textbox {
+            width: 200px;
+        }
+
+        select {
+            width: 205px;
+        }
+
+        .gridButton {
+            width: 160px;
+        }
+
+        .button {
+            width: 110px;
+        }
+
+        .createbutton {
+            width: 140px;
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+        fieldset {
+            vertical-align: middle;
+        }
+
+            fieldset.Select {
+                width: 70%;
+                margin-bottom: auto;
+                margin-right: 20px;
+                float: left;
+                min-height: 110px;
+            }
+
+            fieldset.Options {
+                margin-top: 20px;
+                margin-bottom: auto;
+                min-height: 110px;
+                text-align: right;
+            }
+
+            fieldset.Config {
+                margin: auto;
+                min-height: 135px;
+                text-align: right;
+            }
+
+            fieldset.CreateRelationship {
+                min-height: 130px;
+                text-align: right;
+                position: relative;
+                border: 0;
+            }
+
+        LEGEND {
+            padding: 5px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body onload="loadDefaults();">
+    <div>
+        <fieldset class="Select">
+            <legend>Item Configuration</legend>
+            <div>
+                <table>
+                    <tr>
+                        <td>
+                            ItemType:
+                        </td>
+                        <td>
+                            <input class="textbox" type="text" name="Itemtype" readonly="readonly" title="ItemType (Related)">
+                        </td>
+                        <td>
+                            <input class="button" id="selectItemtype" name="selectItemtype" type="button" value="Itemtype" onclick="setItemtype()" title="Click to choose ItemType (Related)">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Item Name:
+                        </td>
+                        <td>
+                            <input class="textbox" type="text" name="Item" readonly="readonly" title="Keyed name of the item">
+                        </td>
+                        <td>
+                            <input class="button" id="selectItem" name="selectItem" type="button" value="Item" onclick="setItem()" title="Click to select the item instance to create the reverse relationship(s)">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Choose Relationship:
+                        </td>
+                        <td>
+                            <select id="RelationshipList2" name="RelationshipList2" title="Available Relationships"></select>
+                        </td>
+                        <td>
+                            <input class="button" id="chooseItems" name="chooseItems" type="button" value="Choose Items" onclick="chooseButton()" title="Choose Parent Items to create reverse relationship">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </fieldset>
+        <fieldset class="Options">
+            <legend>Configuration</legend>
+            <div>
+                <div>
+                    Aras PLM:
+                    <input type="checkbox" id="ArasPLM" name="ArasPLM" checked title="When creating the relationship apply as the Aras PLM identity">
+                </div>
+                <div>
+                    Version Item:
+                    <input type="checkbox" id="VersionItem" name="VersionItem" title="When checked set 'version = 1' when creating relationship. When unchecked set 'version=0'">
+                </div>
+                <div>
+                    Prevent Duplicate:
+                    <input type="checkbox" id="PreventDuplicate" name="PreventDuplicate" checked title="When checked do not recreate the relationship if it already exists">
+                </div>
+                <div>
+                    Refresh after Create:
+                    <input type="checkbox" id="RefreshGrid" name="RefreshGrid" checked title="Refresh the grid after the reverse relationship is created (Create Relationship button)">
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset class="Config">
+            <legend>Grid</legend>
+            <div>
+                <div>
+                    <input class="gridButton" id="ClearGrid" name="ClearGrid" type="button" value="Clear Grid" onclick="clearGrid()" title="Clear the entire grid">
+                </div>
+                <div>
+                    <input class="gridButton" id="DeleteSelected" name="DeleteSelected" type="button" value="Remove Selected Rows" onclick="RemoveItemsFromGrid()" title="Remove the selected row(s) from the grid">
+                </div>
+                <div>
+                    <input class="gridButton" id="ClearPassed" name="ClearPassed" type="button" value="Remove Successfully Created" onclick="clearPassed()" title="Remove successfully created row(s) from the grid">
+                </div>
+                <br></br>
+                <div>
+                    <input class="gridButton" id="CreateRelationship" name="CreateRelationship" type="button" value="Create Relationship" onclick="CreateRelations()" title="Create the reverse relationship">
+                </div>
+            </div>
+        </fieldset>
+    </div>
+    <br><br>
+    <div id="MyGrid" style="width:800px; height:250px;"></div>
+</body>
+</html>]]></html_code>
+      <is_disabled>0</is_disabled>
+      <is_visible>1</is_visible>
+      <label_position>top</label_position>
+      <list_no_blank>0</list_no_blank>
+      <sort_order>128</sort_order>
+      <source_id keyed_name="4CFC7EF41AD34B60A439D95FFCB555CB" type="Body">4CFC7EF41AD34B60A439D95FFCB555CB</source_id>
+      <tab_stop>1</tab_stop>
+      <x>0</x>
+      <y>0</y>
+      <name>html</name>
+     </Item>
     </Relationships>
-    <stylesheet>
-      <![CDATA[../styles/default.css]]>
-      </stylesheet>
-    <width>850</width>
-  </Item>
+   </Item>
+  </Relationships>
+ </Item>
 </AML>
