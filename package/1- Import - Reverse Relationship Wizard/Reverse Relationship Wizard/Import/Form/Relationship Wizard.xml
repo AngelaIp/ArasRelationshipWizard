@@ -217,7 +217,7 @@
         }
 
         function CreateRelations() {
-            debugger;
+            //debugger;
             grid = myGridControl;
             var ids = grid.getAllItemIds("|");
             var id_array = ids.split("|");
