@@ -1,0 +1,22 @@
+﻿<AML>
+	<Item type="Item Action" id="F0D45C123CB343D488556C1151FE3FAD" action="add">
+		<related_id keyed_name="RelWiz - Create" type="Action">
+			<Item type="Action" id="7E3E03E53CF94B988F5931D264099C64" action="add">
+				<item_query>&lt;Item type="{@type}" id="{@id}" levels= "1" action="get" /&gt;</item_query>
+				<label xml:lang="en">Create Relationship</label>
+				<location>client</location>
+				<method keyed_name="RelWiz - Open Wizard" type="Method">
+					<Item type="Method" action="get" select="id">
+						<name>RelWiz - Open Wizard</name>
+					</Item>
+				</method>
+				<target>none</target>
+				<type>item</type>
+				<name>RelWiz - Create</name>
+				<permission_id keyed_name="AdministratorsOnly" type="Permission">9862DDFAAF97463B940DA624B95BA71A</permission_id>
+			</Item>
+		</related_id>
+		<sort_order>896</sort_order>
+		<source_id keyed_name="Document" type="ItemType" name="Document">B88C14B99EF449828C5D926E39EE8B89</source_id>
+	</Item>
+</AML>

@@ -1,5 +1,5 @@
 <imports>
-	<package name="com.aras.innovator.solution.PLM" path="PLM\Import">
+	<package name="Reverse Relationship Wizard - Item Actions" path="Reverse Relationship Wizard - Item Actions\Import">
 		<dependson name="Reverse Relationship Wizard" />
 		<dependson name="com.aras.innovator.core" />
 	</package>
